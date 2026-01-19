@@ -1,4 +1,4 @@
-// src/components/ViewToggle.tsx
+// components/ViewToggle.tsx
 'use client';
 
 import { useState } from 'react';

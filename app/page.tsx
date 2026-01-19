@@ -1,4 +1,4 @@
-// src/app/page.tsx
+// app/page.tsx
 // メンズエステ求人サイト「エステジョブ」トップページ
 // Supabase接続 + 地図表示機能
 
