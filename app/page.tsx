@@ -32,7 +32,7 @@ export type Recruitment = {
   bonus: number | null;
   tags: string[] | null;
   image_url: string | null;
-  is_featured: boolean;
+  is_featured?: boolean;
   description: string | null;
   main_concept: string | null;
   lat: number | null;
@@ -68,7 +68,6 @@ export default async function HomePage() {
     .from('recruitments')
     .select('*')
     .eq('is_active', true)
-    .order('is_featured', { ascending: false })
     .order('created_at', { ascending: false })
     .limit(12);
 
