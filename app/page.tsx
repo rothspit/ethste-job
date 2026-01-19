@@ -1,161 +1,118 @@
 // src/app/page.tsx
-import { createClient } from '@supabase/supabase-js';
-import {
-  Search, MapPin, Wallet, Sparkles, Heart, Shield,
-  Clock, Car, Gift, MessageCircle, ChevronRight,
-  Star, BadgeCheck, TrendingUp
+// メンズエステ求人サイト「エステジョブ」トップページ
+// Supabase接続 + 地図表示機能
+
+import { createClient } from '@/lib/supabase/server';
+import { 
+  Search, 
+  MapPin, 
+  Wallet, 
+  Sparkles, 
+  Heart, 
+  Shield, 
+  Clock, 
+  Car, 
+  Gift, 
+  MessageCircle,
+  ChevronRight,
+  Star,
+  BadgeCheck,
+  TrendingUp,
 } from 'lucide-react';
+import ViewToggle from '@/components/ViewToggle';
 
-// Supabaseクライアントの作成（環境変数を使ってサーバー側で初期化）
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-// データの型定義 (DBのカラムに合わせる)
-type Recruitment = {
+// 型定義（lat, lng追加）
+export type Recruitment = {
   id: string;
   shop_name: string;
   area: string;
-  hourly_wage_min: number;
+  hourly_wage_min: number | null;
   hourly_wage_max: number | null;
-  guarantee_wage: number;
-  joining_bonus: number;
-  tags: string[];
-  main_image_url: string | null;
-  catch_copy: string | null;
+  daily_guarantee: number | null;
+  bonus: number | null;
+  tags: string[] | null;
+  image_url: string | null;
+  is_featured: boolean;
   description: string | null;
-  is_active: boolean;
+  main_concept: string | null;
+  lat: number | null;
+  lng: number | null;
 };
 
-// エリアデータ
-const areas = [
+type Area = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
+// エリアデータ（フォールバック用）
+const defaultAreas = [
   '全エリア', '新宿', '渋谷', '池袋', '銀座', '六本木', '恵比寿', '品川', '上野', '横浜'
 ];
 
 // こだわり条件
 const preferences = [
-  { id: 'is_experienced_only', label: '未経験歓迎', icon: Heart }, // DBに合わせて調整
-  { id: 'is_daily_payment', label: '日払いOK', icon: Wallet },
-  { id: 'is_shuttle', label: '送迎あり', icon: Car },
-  { id: 'joining_bonus', label: '入店祝い金', icon: Gift },
+  { id: 'inexperienced', label: '未経験歓迎', icon: Heart },
+  { id: 'daily_pay', label: '日払いOK', icon: Wallet },
+  { id: 'pickup', label: '送迎あり', icon: Car },
+  { id: 'bonus', label: '入店祝い金', icon: Gift },
 ];
 
-// 求人カードコンポーネント
-function RecruitmentCard({ recruitment }: { recruitment: Recruitment }) {
-  // 注目求人（とりあえず時給1万超えを注目とするロジック）
-  const isFeatured = recruitment.hourly_wage_min >= 10000;
-
-  return (
-    <div className="bg-white rounded-2xl shadow-sm border border-pink-100 overflow-hidden hover:shadow-lg hover:border-pink-200 transition-all duration-300 group">
-      {/* 画像エリア */}
-      <div className="relative h-40 bg-gradient-to-br from-pink-100 to-pink-50 flex items-center justify-center">
-        {recruitment.main_image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={recruitment.main_image_url} alt={recruitment.shop_name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="text-pink-300">
-            <Sparkles className="w-16 h-16" />
-          </div>
-        )}
-
-        {isFeatured && (
-          <div className="absolute top-3 left-3 bg-gradient-to-r from-pink-500 to-rose-400 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
-            <Star className="w-3 h-3 fill-current" />
-            注目求人
-          </div>
-        )}
-
-        {/* 時給バッジ */}
-        <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2 shadow-md">
-          <div className="text-xs text-gray-500">最低時給/バック</div>
-          <div className="text-lg font-bold text-pink-500">
-            ¥{recruitment.hourly_wage_min.toLocaleString()}〜
-          </div>
-        </div>
-      </div>
-
-      {/* コンテンツ */}
-      <div className="p-4">
-        {/* 店名・エリア */}
-        <div className="flex items-start justify-between mb-2">
-          <div>
-            <h3 className="font-bold text-gray-800 group-hover:text-pink-500 transition-colors">
-              {recruitment.shop_name}
-            </h3>
-            <div className="flex items-center text-sm text-gray-500 mt-0.5">
-              <MapPin className="w-3.5 h-3.5 mr-1" />
-              {recruitment.area}
-            </div>
-          </div>
-        </div>
-
-        {/* キャッチコピー・説明 */}
-        <p className="text-sm font-medium text-pink-500 mb-1">
-          {recruitment.catch_copy}
-        </p>
-        <p className="text-xs text-gray-500 mb-3 line-clamp-2">
-          {recruitment.description}
-        </p>
-
-        {/* 待遇ハイライト */}
-        <div className="flex flex-wrap gap-2 mb-3">
-          {recruitment.guarantee_wage > 0 && (
-            <div className="flex items-center bg-pink-50 text-pink-600 text-xs font-medium px-2.5 py-1 rounded-lg">
-              <TrendingUp className="w-3.5 h-3.5 mr-1" />
-              保証 ¥{recruitment.guarantee_wage.toLocaleString()}
-            </div>
-          )}
-          {recruitment.joining_bonus > 0 && (
-            <div className="flex items-center bg-amber-50 text-amber-600 text-xs font-medium px-2.5 py-1 rounded-lg">
-              <Gift className="w-3.5 h-3.5 mr-1" />
-              祝い金 ¥{recruitment.joining_bonus.toLocaleString()}
-            </div>
-          )}
-        </div>
-
-        {/* タグ */}
-        <div className="flex flex-wrap gap-1.5">
-          {recruitment.tags?.map((tag, i) => (
-            <span
-              key={i}
-              className="text-xs bg-pink-100 text-pink-500 px-2 py-0.5 rounded-full"
-            >
-              #{tag}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* 詳細ボタン */}
-      <div className="px-4 pb-4">
-        <button className="w-full py-2.5 bg-gradient-to-r from-pink-400 to-rose-400 hover:from-pink-500 hover:to-rose-500 text-white font-medium rounded-xl transition-all flex items-center justify-center gap-1 shadow-sm hover:shadow-md">
-          詳細を見る
-          <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// メインページ
+// メインページ（Server Component）
 export default async function HomePage() {
-  // Supabaseから求人データを取得（サーバーコンポーネント内で実行）
-  const { data: recruitments, error } = await supabase
+  // Supabaseクライアント作成
+  const supabase = await createClient();
+
+  // 求人データを取得（lat, lng含む）
+  const { data: recruitments, error: recruitmentsError } = await supabase
     .from('recruitments')
     .select('*')
     .eq('is_active', true)
-    .order('created_at', { ascending: false });
+    .order('is_featured', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(12);
 
-  if (error) {
-    console.error('Error fetching data:', error);
+  // エリアデータを取得
+  const { data: areas } = await supabase
+    .from('areas')
+    .select('id, name, slug')
+    .eq('is_active', true)
+    .order('sort_order');
+
+  // エリア名のリスト作成
+  const areaNames = areas 
+    ? ['全エリア', ...areas.map((a: Area) => a.name)]
+    : defaultAreas;
+
+  // エラーハンドリング
+  if (recruitmentsError) {
+    console.error('Error fetching recruitments:', recruitmentsError);
   }
+
+  const displayRecruitments: Recruitment[] = recruitments || [];
+
+  // 地図表示用: lat/lngがある店舗のみ抽出
+  const shopsWithLocation = displayRecruitments
+    .filter((r): r is Recruitment & { lat: number; lng: number } => 
+      r.lat !== null && r.lng !== null
+    )
+    .map(r => ({
+      id: r.id,
+      name: r.shop_name,
+      lat: r.lat,
+      lng: r.lng,
+      area: r.area,
+      hourly_wage_min: r.hourly_wage_min,
+      hourly_wage_max: r.hourly_wage_max,
+      main_concept: r.main_concept,
+    }));
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
       {/* ヘッダー */}
       <header className="bg-white/80 backdrop-blur-md border-b border-pink-100 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <a href="/" className="flex items-center gap-2">
             <div className="w-10 h-10 bg-gradient-to-br from-pink-400 to-rose-400 rounded-xl flex items-center justify-center shadow-md">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
@@ -163,15 +120,18 @@ export default async function HomePage() {
               <div className="font-bold text-gray-800 text-lg leading-tight">エステジョブ</div>
               <div className="text-[10px] text-pink-400 font-medium">メンエス専門求人</div>
             </div>
-          </div>
+          </a>
           <nav className="hidden md:flex items-center gap-6 text-sm">
-            <a href="#" className="text-gray-600 hover:text-pink-500 transition-colors">求人一覧</a>
-            <a href="#" className="text-gray-600 hover:text-pink-500 transition-colors">エリアから探す</a>
-            <a href="#" className="text-gray-600 hover:text-pink-500 transition-colors">お役立ち情報</a>
+            <a href="/recruitments" className="text-gray-600 hover:text-pink-500 transition-colors">求人一覧</a>
+            <a href="/areas" className="text-gray-600 hover:text-pink-500 transition-colors">エリアから探す</a>
+            <a href="/guide" className="text-gray-600 hover:text-pink-500 transition-colors">お役立ち情報</a>
           </nav>
-          <button className="bg-pink-500 hover:bg-pink-600 text-white text-sm font-medium px-4 py-2 rounded-full transition-colors shadow-sm">
+          <a 
+            href="/register"
+            className="bg-pink-500 hover:bg-pink-600 text-white text-sm font-medium px-4 py-2 rounded-full transition-colors shadow-sm"
+          >
             会員登録
-          </button>
+          </a>
         </div>
       </header>
 
@@ -225,102 +185,105 @@ export default async function HomePage() {
       {/* 検索ボックス */}
       <section className="relative -mt-8 z-10 px-4">
         <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl border border-pink-100 p-6">
-          <div className="grid md:grid-cols-4 gap-4">
-            {/* エリア選択 */}
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1.5">エリア</label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-pink-400" />
-                <select className="w-full pl-10 pr-4 py-3 bg-pink-50 border-0 rounded-xl text-gray-700 focus:ring-2 focus:ring-pink-300 appearance-none cursor-pointer">
-                  {areas.map((area) => (
-                    <option key={area} value={area}>{area}</option>
-                  ))}
-                </select>
+          <form action="/recruitments" method="GET">
+            <div className="grid md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">エリア</label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-pink-400" />
+                  <select 
+                    name="area"
+                    className="w-full pl-10 pr-4 py-3 bg-pink-50 border-0 rounded-xl text-gray-700 focus:ring-2 focus:ring-pink-300 appearance-none cursor-pointer"
+                  >
+                    {areaNames.map((area) => (
+                      <option key={area} value={area === '全エリア' ? '' : area}>{area}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">最低時給</label>
+                <div className="relative">
+                  <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-pink-400" />
+                  <select 
+                    name="min_wage"
+                    className="w-full pl-10 pr-4 py-3 bg-pink-50 border-0 rounded-xl text-gray-700 focus:ring-2 focus:ring-pink-300 appearance-none cursor-pointer"
+                  >
+                    <option value="">指定なし</option>
+                    <option value="5000">5,000円以上</option>
+                    <option value="8000">8,000円以上</option>
+                    <option value="10000">10,000円以上</option>
+                    <option value="15000">15,000円以上</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">こだわり</label>
+                <div className="relative">
+                  <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-pink-400" />
+                  <select 
+                    name="tag"
+                    className="w-full pl-10 pr-4 py-3 bg-pink-50 border-0 rounded-xl text-gray-700 focus:ring-2 focus:ring-pink-300 appearance-none cursor-pointer"
+                  >
+                    <option value="">すべて</option>
+                    <option value="未経験歓迎">未経験歓迎</option>
+                    <option value="日払いOK">日払いOK</option>
+                    <option value="送迎あり">送迎あり</option>
+                    <option value="入店祝い金">入店祝い金あり</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-end">
+                <button 
+                  type="submit"
+                  className="w-full py-3 bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+                >
+                  <Search className="w-5 h-5" />
+                  検索する
+                </button>
               </div>
             </div>
+          </form>
 
-            {/* 時給 */}
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1.5">最低時給</label>
-              <div className="relative">
-                <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-pink-400" />
-                <select className="w-full pl-10 pr-4 py-3 bg-pink-50 border-0 rounded-xl text-gray-700 focus:ring-2 focus:ring-pink-300 appearance-none cursor-pointer">
-                  <option value="">指定なし</option>
-                  <option value="5000">5,000円以上</option>
-                  <option value="8000">8,000円以上</option>
-                  <option value="10000">10,000円以上</option>
-                  <option value="15000">15,000円以上</option>
-                </select>
-              </div>
-            </div>
-
-            {/* こだわり */}
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1.5">こだわり</label>
-              <div className="relative">
-                <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-pink-400" />
-                <select className="w-full pl-10 pr-4 py-3 bg-pink-50 border-0 rounded-xl text-gray-700 focus:ring-2 focus:ring-pink-300 appearance-none cursor-pointer">
-                  <option value="">すべて</option>
-                  <option value="inexperienced">未経験歓迎</option>
-                  <option value="daily_pay">日払いOK</option>
-                  <option value="pickup">送迎あり</option>
-                  <option value="bonus">入店祝い金あり</option>
-                </select>
-              </div>
-            </div>
-
-            {/* 検索ボタン */}
-            <div className="flex items-end">
-              <button className="w-full py-3 bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
-                <Search className="w-5 h-5" />
-                検索する
-              </button>
-            </div>
-          </div>
-
-          {/* クイックフィルター */}
           <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-pink-100">
             {preferences.map((pref) => (
-              <button
+              <a
                 key={pref.id}
+                href={`/recruitments?tag=${encodeURIComponent(pref.label)}`}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-pink-50 hover:bg-pink-100 text-pink-600 text-sm rounded-full transition-colors border border-pink-200"
               >
                 <pref.icon className="w-4 h-4" />
                 {pref.label}
-              </button>
+              </a>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 求人一覧 */}
+      {/* 求人一覧 + 地図切り替え */}
       <section className="max-w-6xl mx-auto px-4 py-16">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold text-gray-800">注目の求人</h2>
             <p className="text-gray-500 text-sm mt-1">厳選された優良店舗の求人情報</p>
           </div>
-          <a href="#" className="text-pink-500 hover:text-pink-600 text-sm font-medium flex items-center gap-1 transition-colors">
+          <a href="/recruitments" className="text-pink-500 hover:text-pink-600 text-sm font-medium flex items-center gap-1 transition-colors">
             すべて見る
             <ChevronRight className="w-4 h-4" />
           </a>
         </div>
 
-        {/* データベースから取得したデータを表示 */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {recruitments && recruitments.length > 0 ? (
-            recruitments.map((recruitment) => (
-              <RecruitmentCard key={recruitment.id} recruitment={recruitment} />
-            ))
-          ) : (
-            <div className="col-span-3 text-center py-10 text-gray-400">
-              現在、掲載中の求人はありません
-            </div>
-          )}
-        </div>
+        {/* リスト/地図表示切り替え（Client Component） */}
+        <ViewToggle 
+          recruitments={displayRecruitments}
+          shopsWithLocation={shopsWithLocation}
+        />
       </section>
 
-      {/* 安心ポイント (変更なし) */}
+      {/* 安心ポイント */}
       <section className="bg-gradient-to-br from-pink-50 to-white py-16">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
@@ -362,7 +325,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* フッター (変更なし) */}
+      {/* フッター */}
       <footer className="bg-gray-800 text-white py-12">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
@@ -380,25 +343,25 @@ export default async function HomePage() {
             <div>
               <h4 className="font-bold mb-4">求人を探す</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-pink-400 transition-colors">エリアから探す</a></li>
-                <li><a href="#" className="hover:text-pink-400 transition-colors">条件から探す</a></li>
-                <li><a href="#" className="hover:text-pink-400 transition-colors">新着求人</a></li>
+                <li><a href="/areas" className="hover:text-pink-400 transition-colors">エリアから探す</a></li>
+                <li><a href="/recruitments" className="hover:text-pink-400 transition-colors">条件から探す</a></li>
+                <li><a href="/recruitments?sort=new" className="hover:text-pink-400 transition-colors">新着求人</a></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-4">お役立ち情報</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-pink-400 transition-colors">はじめての方へ</a></li>
-                <li><a href="#" className="hover:text-pink-400 transition-colors">働き方ガイド</a></li>
-                <li><a href="#" className="hover:text-pink-400 transition-colors">よくある質問</a></li>
+                <li><a href="/guide/beginner" className="hover:text-pink-400 transition-colors">はじめての方へ</a></li>
+                <li><a href="/guide/work" className="hover:text-pink-400 transition-colors">働き方ガイド</a></li>
+                <li><a href="/faq" className="hover:text-pink-400 transition-colors">よくある質問</a></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-4">運営情報</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-pink-400 transition-colors">運営会社</a></li>
-                <li><a href="#" className="hover:text-pink-400 transition-colors">プライバシーポリシー</a></li>
-                <li><a href="#" className="hover:text-pink-400 transition-colors">利用規約</a></li>
+                <li><a href="/company" className="hover:text-pink-400 transition-colors">運営会社</a></li>
+                <li><a href="/privacy" className="hover:text-pink-400 transition-colors">プライバシーポリシー</a></li>
+                <li><a href="/terms" className="hover:text-pink-400 transition-colors">利用規約</a></li>
               </ul>
             </div>
           </div>
@@ -408,22 +371,26 @@ export default async function HomePage() {
         </div>
       </footer>
 
-      {/* 固定LINE相談ボタン (変更なし) */}
+      {/* 固定LINE相談ボタン */}
       <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-white via-white to-transparent pointer-events-none">
         <div className="max-w-lg mx-auto pointer-events-auto">
-          <button className="w-full py-4 bg-[#06C755] hover:bg-[#05b04c] text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2 text-lg">
+          <a 
+            href="https://line.me/R/ti/p/@your-line-id"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-4 bg-[#06C755] hover:bg-[#05b04c] text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2 text-lg"
+          >
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.349 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314" />
+              <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.349 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
             </svg>
             LINEで相談する（無料）
-          </button>
+          </a>
           <p className="text-center text-xs text-gray-500 mt-2">
             24時間対応・女性スタッフが対応します
           </p>
         </div>
       </div>
 
-      {/* 下部余白（固定ボタン分） */}
       <div className="h-28" />
     </div>
   );
