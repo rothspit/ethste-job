@@ -67,9 +67,8 @@ export default async function HomePage() {
   const { data: recruitments, error: recruitmentsError } = await supabase
     .from('recruitments')
     .select('*')
-    .eq('is_active', true)
     .order('created_at', { ascending: false })
-    .limit(12);
+    .limit(300);
 
   // エリアデータを取得
   const { data: areas } = await supabase
