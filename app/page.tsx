@@ -1,17 +1,10 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Potta_One, Zen_Old_Mincho } from 'next/font/google'
+import { Noto_Sans_JP } from 'next/font/google'
 
-// 手書き風で勢いのあるフォント
-const idolFont = Potta_One({
-  weight: '400',
-  subsets: ['latin'],
-  preload: false,
-})
-
-// 人妻用（明朝体）
-const adultFont = Zen_Old_Mincho({
-  weight: '900',
+// 読みやすさNo.1の標準フォント
+const baseFont = Noto_Sans_JP({
+  weight: ['700', '900'],
   subsets: ['latin'],
   preload: false,
 })
@@ -26,11 +19,11 @@ export default function Home() {
         </div>
 
         <div className="relative z-10">
-          {/* 🎀 ロゴ：Potta Oneを適用 */}
-          <h1 className={`${idolFont.className} text-5xl md:text-7xl mb-2 text-white tracking-wider drop-shadow-xl leading-relaxed`}>
+          {/* 🎀 シンプル・イズ・ベスト */}
+          <h1 className={`${baseFont.className} text-5xl md:text-7xl mb-2 text-white font-black tracking-wider drop-shadow-xl`}>
             アイドル<span className="text-pink-500">学園</span>
           </h1>
-          <p className="text-slate-400 text-xs font-bold tracking-[0.2em] uppercase text-shadow-sm">
+          <p className={`${baseFont.className} text-slate-400 text-xs font-bold tracking-[0.3em] uppercase`}>
             GROUP OFFICIAL PORTAL
           </p>
 
@@ -56,8 +49,7 @@ export default function Home() {
           <div className="relative p-8 h-80 flex flex-col items-center text-center justify-end">
             <div className="bg-pink-500 text-white text-xs font-black px-4 py-1 rounded-full mb-3 shadow-md">船橋エリア No.1</div>
 
-            {/* ここも Potta One */}
-            <h2 className={`${idolFont.className} text-4xl md:text-6xl text-white mb-2 drop-shadow-md tracking-wider leading-snug`}>
+            <h2 className={`${baseFont.className} text-4xl md:text-5xl text-white mb-2 font-black drop-shadow-md tracking-wide`}>
               アイドル<span className="text-pink-200">学園</span>
             </h2>
             <p className="text-pink-100 font-bold mb-4 text-sm drop-shadow">究極の「かわいい」をお届け</p>
@@ -70,12 +62,12 @@ export default function Home() {
         {/* 💋 人妻の蜜 */}
         <Link href="/mitsu" className="group relative overflow-hidden rounded-2xl border-4 border-purple-600 transform hover:-translate-y-2 transition-all duration-300 shadow-2xl shadow-purple-500/30">
           <Image src="/main_mitsu.jpg" alt="人妻の蜜" fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
-          <div className="absolute inset-0 bg-gradient-to-t from-purple-900/90 via-pink-500/50 to-transparent mix-blend-multiply"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-purple-900/90 via-purple-500/50 to-transparent mix-blend-multiply"></div>
 
           <div className="relative p-8 h-80 flex flex-col items-center text-center justify-end">
             <div className="bg-purple-600 text-white text-xs font-black px-4 py-1 rounded-full mb-3 shadow-md">大人の極上癒やし</div>
 
-            <h2 className={`${adultFont.className} text-4xl md:text-5xl text-white mb-2 drop-shadow-md leading-tight`}>
+            <h2 className={`${baseFont.className} text-4xl md:text-5xl text-white mb-2 font-black drop-shadow-md tracking-wide`}>
               人妻の<span className="text-purple-300">蜜</span>
             </h2>
             <p className="text-purple-200 font-bold mb-4 text-sm drop-shadow">西船橋・葛西・錦糸町</p>
