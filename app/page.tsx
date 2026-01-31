@@ -1,15 +1,15 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Mochiy_Pop_One, Zen_Old_Mincho } from 'next/font/google'
+import { Zen_Maru_Gothic, Zen_Old_Mincho } from 'next/font/google'
 
-// 可愛いフォントの設定
-const cuteFont = Mochiy_Pop_One({
-  weight: '400',
+// 王道の可愛い丸文字（太さ900でロゴっぽく）
+const cuteFont = Zen_Maru_Gothic({
+  weight: '900',
   subsets: ['latin'],
   preload: false,
 })
 
-// 大人っぽいフォントの設定（人妻用）
+// 大人っぽいフォント（人妻用）
 const adultFont = Zen_Old_Mincho({
   weight: '900',
   subsets: ['latin'],
@@ -26,7 +26,7 @@ export default function Home() {
         </div>
 
         <div className="relative z-10">
-          {/* 🎀 ここを日本語＆可愛いフォントに変更！ */}
+          {/* ロゴ：Zen丸ゴシック */}
           <h1 className={`${cuteFont.className} text-4xl md:text-6xl mb-2 text-white drop-shadow-lg tracking-wider`}>
             アイドル<span className="text-pink-500">学園</span>
           </h1>
@@ -48,14 +48,14 @@ export default function Home() {
       {/* 2. 店舗選択エリア */}
       <div className="max-w-5xl mx-auto p-4 md:p-8 grid md:grid-cols-2 gap-8 -mt-6 relative z-20">
 
-        {/* 🎀 アイドル学園（可愛いロゴ） */}
+        {/* 🎀 アイドル学園 */}
         <Link href="/funabashi" className="group relative overflow-hidden rounded-2xl border-4 border-pink-500 transform hover:-translate-y-2 transition-all duration-300 shadow-2xl shadow-pink-500/30">
           <Image src="/main_idol.jpg" alt="アイドル学園" fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
           <div className="absolute inset-0 bg-gradient-to-t from-pink-900/90 via-pink-500/50 to-transparent mix-blend-multiply"></div>
 
           <div className="relative p-8 h-80 flex flex-col items-center text-center justify-end">
             <div className="bg-pink-500 text-white text-xs font-black px-4 py-1 rounded-full mb-3 shadow-md">船橋エリア No.1</div>
-            {/* 可愛いフォント適用 */}
+
             <h2 className={`${cuteFont.className} text-4xl md:text-5xl text-white mb-2 drop-shadow-md leading-tight`}>
               アイドル<span className="text-pink-200">学園</span>
             </h2>
@@ -66,14 +66,14 @@ export default function Home() {
           </div>
         </Link>
 
-        {/* 💋 人妻の蜜（大人っぽいロゴ） */}
+        {/* 💋 人妻の蜜 */}
         <Link href="/mitsu" className="group relative overflow-hidden rounded-2xl border-4 border-purple-600 transform hover:-translate-y-2 transition-all duration-300 shadow-2xl shadow-purple-500/30">
           <Image src="/main_mitsu.jpg" alt="人妻の蜜" fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
           <div className="absolute inset-0 bg-gradient-to-t from-purple-900/90 via-purple-500/50 to-transparent mix-blend-multiply"></div>
 
           <div className="relative p-8 h-80 flex flex-col items-center text-center justify-end">
             <div className="bg-purple-600 text-white text-xs font-black px-4 py-1 rounded-full mb-3 shadow-md">大人の極上癒やし</div>
-            {/* 大人っぽいフォント適用 */}
+
             <h2 className={`${adultFont.className} text-4xl md:text-5xl text-white mb-2 drop-shadow-md leading-tight`}>
               人妻の<span className="text-purple-300">蜜</span>
             </h2>
