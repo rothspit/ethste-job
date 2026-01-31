@@ -1,15 +1,15 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Rampart_One, Zen_Old_Mincho } from 'next/font/google'
+import { M_PLUS_Rounded_1c, Zen_Old_Mincho } from 'next/font/google'
 
-// 立体的でロゴっぽいフォント（元気・可愛い）
-const logoFont = Rampart_One({
-  weight: '400',
+// 乃木坂やK-POP風の「極太・丸文字」
+const idolFont = M_PLUS_Rounded_1c({
+  weight: '800',
   subsets: ['latin'],
   preload: false,
 })
 
-// 大人っぽいフォント（人妻用）
+// 人妻用（明朝体）
 const adultFont = Zen_Old_Mincho({
   weight: '900',
   subsets: ['latin'],
@@ -26,11 +26,11 @@ export default function Home() {
         </div>
 
         <div className="relative z-10">
-          {/* 🎀 ロゴ：立体フォント＋文字間隔を広げる */}
-          <h1 className={`${logoFont.className} text-5xl md:text-7xl mb-2 text-white drop-shadow-lg tracking-widest leading-relaxed`}>
+          {/* 🎀 ロゴ：極太・文字詰め・影付き */}
+          <h1 className={`${idolFont.className} text-5xl md:text-7xl mb-2 text-white tracking-tighter drop-shadow-xl`}>
             アイドル<span className="text-pink-500">学園</span>
           </h1>
-          <p className="text-slate-300 text-xs font-bold tracking-[0.3em] uppercase text-shadow">
+          <p className="text-slate-400 text-xs font-bold tracking-[0.2em] uppercase text-shadow-sm">
             GROUP OFFICIAL PORTAL
           </p>
 
@@ -56,7 +56,8 @@ export default function Home() {
           <div className="relative p-8 h-80 flex flex-col items-center text-center justify-end">
             <div className="bg-pink-500 text-white text-xs font-black px-4 py-1 rounded-full mb-3 shadow-md">船橋エリア No.1</div>
 
-            <h2 className={`${logoFont.className} text-4xl md:text-6xl text-white mb-2 drop-shadow-md tracking-wider`}>
+            {/* ここも極太丸文字 */}
+            <h2 className={`${idolFont.className} text-4xl md:text-6xl text-white mb-2 drop-shadow-md tracking-tighter`}>
               アイドル<span className="text-pink-200">学園</span>
             </h2>
             <p className="text-pink-100 font-bold mb-4 text-sm drop-shadow">究極の「かわいい」をお届け</p>
