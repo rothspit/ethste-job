@@ -1,10 +1,10 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { M_PLUS_Rounded_1c, Zen_Old_Mincho } from 'next/font/google'
+import { Potta_One, Zen_Old_Mincho } from 'next/font/google'
 
-// 乃木坂やK-POP風の「極太・丸文字」
-const idolFont = M_PLUS_Rounded_1c({
-  weight: '800',
+// 手書き風で勢いのあるフォント
+const idolFont = Potta_One({
+  weight: '400',
   subsets: ['latin'],
   preload: false,
 })
@@ -26,8 +26,8 @@ export default function Home() {
         </div>
 
         <div className="relative z-10">
-          {/* 🎀 ロゴ：極太・文字詰め・影付き */}
-          <h1 className={`${idolFont.className} text-5xl md:text-7xl mb-2 text-white tracking-tighter drop-shadow-xl`}>
+          {/* 🎀 ロゴ：Potta Oneを適用 */}
+          <h1 className={`${idolFont.className} text-5xl md:text-7xl mb-2 text-white tracking-wider drop-shadow-xl leading-relaxed`}>
             アイドル<span className="text-pink-500">学園</span>
           </h1>
           <p className="text-slate-400 text-xs font-bold tracking-[0.2em] uppercase text-shadow-sm">
@@ -56,8 +56,8 @@ export default function Home() {
           <div className="relative p-8 h-80 flex flex-col items-center text-center justify-end">
             <div className="bg-pink-500 text-white text-xs font-black px-4 py-1 rounded-full mb-3 shadow-md">船橋エリア No.1</div>
 
-            {/* ここも極太丸文字 */}
-            <h2 className={`${idolFont.className} text-4xl md:text-6xl text-white mb-2 drop-shadow-md tracking-tighter`}>
+            {/* ここも Potta One */}
+            <h2 className={`${idolFont.className} text-4xl md:text-6xl text-white mb-2 drop-shadow-md tracking-wider leading-snug`}>
               アイドル<span className="text-pink-200">学園</span>
             </h2>
             <p className="text-pink-100 font-bold mb-4 text-sm drop-shadow">究極の「かわいい」をお届け</p>
@@ -70,7 +70,7 @@ export default function Home() {
         {/* 💋 人妻の蜜 */}
         <Link href="/mitsu" className="group relative overflow-hidden rounded-2xl border-4 border-purple-600 transform hover:-translate-y-2 transition-all duration-300 shadow-2xl shadow-purple-500/30">
           <Image src="/main_mitsu.jpg" alt="人妻の蜜" fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
-          <div className="absolute inset-0 bg-gradient-to-t from-purple-900/90 via-purple-500/50 to-transparent mix-blend-multiply"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-purple-900/90 via-pink-500/50 to-transparent mix-blend-multiply"></div>
 
           <div className="relative p-8 h-80 flex flex-col items-center text-center justify-end">
             <div className="bg-purple-600 text-white text-xs font-black px-4 py-1 rounded-full mb-3 shadow-md">大人の極上癒やし</div>
