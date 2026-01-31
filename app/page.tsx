@@ -1,89 +1,84 @@
 import Link from 'next/link'
-import Image from 'next/image' // 👈 追加！
+import Image from 'next/image'
+import { Mochiy_Pop_One, Zen_Old_Mincho } from 'next/font/google'
+
+// 可愛いフォントの設定
+const cuteFont = Mochiy_Pop_One({
+  weight: '400',
+  subsets: ['latin'],
+  preload: false,
+})
+
+// 大人っぽいフォントの設定（人妻用）
+const adultFont = Zen_Old_Mincho({
+  weight: '900',
+  subsets: ['latin'],
+  preload: false,
+})
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-slate-900 text-white">
       {/* 1. ロゴ＆ボタンエリア */}
       <div className="py-12 text-center bg-gradient-to-b from-slate-800 to-slate-900 border-b border-slate-700 relative overflow-hidden">
-        {/* 背景にうっすらアイドル画像を入れて賑やかし */}
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <Image src="/main_idol.jpg" alt="background" fill className="object-cover blur-sm" />
         </div>
 
         <div className="relative z-10">
-          <h1 className="text-4xl md:text-6xl font-black italic tracking-tighter mb-2 text-white drop-shadow-lg">
-            IDOL <span className="text-pink-500">GAKUEN</span>
+          {/* 🎀 ここを日本語＆可愛いフォントに変更！ */}
+          <h1 className={`${cuteFont.className} text-4xl md:text-6xl mb-2 text-white drop-shadow-lg tracking-wider`}>
+            アイドル<span className="text-pink-500">学園</span>
           </h1>
-          <p className="text-slate-300 text-sm font-bold tracking-widest uppercase text-shadow">
-            Group Official Portal
+          <p className="text-slate-300 text-xs font-bold tracking-widest uppercase text-shadow">
+            GROUP OFFICIAL PORTAL
           </p>
 
           <div className="mt-8 flex justify-center gap-4 px-4">
             <Link href="/login" className="bg-pink-600 hover:bg-pink-500 text-white font-bold px-6 py-3 rounded-full shadow-lg shadow-pink-900/50 flex items-center gap-2 transition-transform active:scale-95">
-               共通 会員ログイン
+               🔑 共通ログイン
             </Link>
             <Link href="/chat" className="bg-green-600 hover:bg-green-500 text-white font-bold px-6 py-3 rounded-full shadow-lg shadow-green-900/50 flex items-center gap-2 transition-transform active:scale-95">
-               総合 受付チャット
+               💬 総合受付
             </Link>
           </div>
         </div>
       </div>
 
-      {/* 2. 店舗選択エリア（画像付きカード） */}
+      {/* 2. 店舗選択エリア */}
       <div className="max-w-5xl mx-auto p-4 md:p-8 grid md:grid-cols-2 gap-8 -mt-6 relative z-20">
 
-        {/* 🎀 アイドル学園 */}
+        {/* 🎀 アイドル学園（可愛いロゴ） */}
         <Link href="/funabashi" className="group relative overflow-hidden rounded-2xl border-4 border-pink-500 transform hover:-translate-y-2 transition-all duration-300 shadow-2xl shadow-pink-500/30">
-          {/* 背景画像 */}
-          <Image
-            src="/main_idol.jpg"
-            alt="アイドル学園"
-            fill
-            className="object-cover group-hover:scale-110 transition-transform duration-700"
-          />
-          {/* グラデーションオーバーレイ（文字を見やすくする） */}
+          <Image src="/main_idol.jpg" alt="アイドル学園" fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
           <div className="absolute inset-0 bg-gradient-to-t from-pink-900/90 via-pink-500/50 to-transparent mix-blend-multiply"></div>
 
           <div className="relative p-8 h-80 flex flex-col items-center text-center justify-end">
-            <div className="bg-pink-500 text-white text-xs font-black px-4 py-1 rounded-full mb-3 shadow-md">
-              船橋エリア No.1
-            </div>
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-2 drop-shadow-md leading-tight">
-              アイドル学園
+            <div className="bg-pink-500 text-white text-xs font-black px-4 py-1 rounded-full mb-3 shadow-md">船橋エリア No.1</div>
+            {/* 可愛いフォント適用 */}
+            <h2 className={`${cuteFont.className} text-4xl md:text-5xl text-white mb-2 drop-shadow-md leading-tight`}>
+              アイドル<span className="text-pink-200">学園</span>
             </h2>
-            <p className="text-pink-200 font-bold mb-4 text-sm drop-shadow">
-              究極の「かわいい」をお届け
-            </p>
-            <div className="bg-white/90 text-pink-600 py-3 px-8 rounded-full font-black shadow-lg w-full md:w-auto group-hover:bg-white group-hover:text-pink-500 transition-colors">
-              船橋本店に入店する ➡
+            <p className="text-pink-100 font-bold mb-4 text-sm drop-shadow">究極の「かわいい」をお届け</p>
+            <div className="bg-white/90 text-pink-600 py-3 px-8 rounded-full font-black shadow-lg group-hover:bg-white transition-colors">
+              船橋本店に入店 ➡
             </div>
           </div>
         </Link>
 
-        {/* 💋 人妻の蜜 */}
+        {/* 💋 人妻の蜜（大人っぽいロゴ） */}
         <Link href="/mitsu" className="group relative overflow-hidden rounded-2xl border-4 border-purple-600 transform hover:-translate-y-2 transition-all duration-300 shadow-2xl shadow-purple-500/30">
-          {/* 背景画像 */}
-          <Image
-            src="/main_mitsu.jpg"
-            alt="人妻の蜜"
-            fill
-            className="object-cover group-hover:scale-110 transition-transform duration-700"
-          />
-          {/* グラデーションオーバーレイ */}
+          <Image src="/main_mitsu.jpg" alt="人妻の蜜" fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
           <div className="absolute inset-0 bg-gradient-to-t from-purple-900/90 via-purple-500/50 to-transparent mix-blend-multiply"></div>
 
           <div className="relative p-8 h-80 flex flex-col items-center text-center justify-end">
-            <div className="bg-purple-600 text-white text-xs font-black px-4 py-1 rounded-full mb-3 shadow-md">
-              大人の極上癒やし
-            </div>
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-2 drop-shadow-md leading-tight">
-              人妻の蜜
+            <div className="bg-purple-600 text-white text-xs font-black px-4 py-1 rounded-full mb-3 shadow-md">大人の極上癒やし</div>
+            {/* 大人っぽいフォント適用 */}
+            <h2 className={`${adultFont.className} text-4xl md:text-5xl text-white mb-2 drop-shadow-md leading-tight`}>
+              人妻の<span className="text-purple-300">蜜</span>
             </h2>
-            <p className="text-purple-200 font-bold mb-4 text-sm drop-shadow">
-              西船橋・葛西・錦糸町
-            </p>
-            <div className="bg-white/90 text-purple-600 py-3 px-8 rounded-full font-black shadow-lg w-full md:w-auto group-hover:bg-white group-hover:text-purple-500 transition-colors">
+            <p className="text-purple-200 font-bold mb-4 text-sm drop-shadow">西船橋・葛西・錦糸町</p>
+            <div className="bg-white/90 text-purple-600 py-3 px-8 rounded-full font-black shadow-lg group-hover:bg-white transition-colors">
               店舗を選択する ➡
             </div>
           </div>
@@ -105,7 +100,6 @@ export default function Home() {
               <span className="text-xs text-slate-600 border border-slate-600 px-3 py-1 rounded-full">計画中</span>
             </div>
           </div>
-          <p className="text-xs text-slate-500 mt-8">※オープン時期は決まり次第、本サイトおよびチャットにて告知いたします。</p>
         </div>
       </div>
     </main>
