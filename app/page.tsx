@@ -1,10 +1,10 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Zen_Maru_Gothic, Zen_Old_Mincho } from 'next/font/google'
+import { Rampart_One, Zen_Old_Mincho } from 'next/font/google'
 
-// 王道の可愛い丸文字（太さ900でロゴっぽく）
-const cuteFont = Zen_Maru_Gothic({
-  weight: '900',
+// 立体的でロゴっぽいフォント（元気・可愛い）
+const logoFont = Rampart_One({
+  weight: '400',
   subsets: ['latin'],
   preload: false,
 })
@@ -26,11 +26,11 @@ export default function Home() {
         </div>
 
         <div className="relative z-10">
-          {/* ロゴ：Zen丸ゴシック */}
-          <h1 className={`${cuteFont.className} text-4xl md:text-6xl mb-2 text-white drop-shadow-lg tracking-wider`}>
+          {/* 🎀 ロゴ：立体フォント＋文字間隔を広げる */}
+          <h1 className={`${logoFont.className} text-5xl md:text-7xl mb-2 text-white drop-shadow-lg tracking-widest leading-relaxed`}>
             アイドル<span className="text-pink-500">学園</span>
           </h1>
-          <p className="text-slate-300 text-xs font-bold tracking-widest uppercase text-shadow">
+          <p className="text-slate-300 text-xs font-bold tracking-[0.3em] uppercase text-shadow">
             GROUP OFFICIAL PORTAL
           </p>
 
@@ -56,7 +56,7 @@ export default function Home() {
           <div className="relative p-8 h-80 flex flex-col items-center text-center justify-end">
             <div className="bg-pink-500 text-white text-xs font-black px-4 py-1 rounded-full mb-3 shadow-md">船橋エリア No.1</div>
 
-            <h2 className={`${cuteFont.className} text-4xl md:text-5xl text-white mb-2 drop-shadow-md leading-tight`}>
+            <h2 className={`${logoFont.className} text-4xl md:text-6xl text-white mb-2 drop-shadow-md tracking-wider`}>
               アイドル<span className="text-pink-200">学園</span>
             </h2>
             <p className="text-pink-100 font-bold mb-4 text-sm drop-shadow">究極の「かわいい」をお届け</p>
