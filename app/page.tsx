@@ -2,7 +2,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Noto_Sans_JP } from 'next/font/google'
 
-// 読みやすさNo.1の標準フォント
 const baseFont = Noto_Sans_JP({
   weight: ['700', '900'],
   subsets: ['latin'],
@@ -12,14 +11,13 @@ const baseFont = Noto_Sans_JP({
 export default function Home() {
   return (
     <main className="min-h-screen bg-slate-900 text-white">
-      {/* 1. ロゴ＆ボタンエリア */}
+      {/* 1. ロゴエリア */}
       <div className="py-12 text-center bg-gradient-to-b from-slate-800 to-slate-900 border-b border-slate-700 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <Image src="/main_idol.jpg" alt="background" fill className="object-cover blur-sm" />
         </div>
 
         <div className="relative z-10">
-          {/* 🎀 シンプル・イズ・ベスト */}
           <h1 className={`${baseFont.className} text-5xl md:text-7xl mb-2 text-white font-black tracking-wider drop-shadow-xl`}>
             アイドル<span className="text-pink-500">学園</span>
           </h1>
@@ -54,13 +52,13 @@ export default function Home() {
             </h2>
             <p className="text-pink-100 font-bold mb-4 text-sm drop-shadow">究極の「かわいい」をお届け</p>
             <div className="bg-white/90 text-pink-600 py-3 px-8 rounded-full font-black shadow-lg group-hover:bg-white transition-colors">
-              船橋本店に入店 ➡
+              船橋店に入店 ➡
             </div>
           </div>
         </Link>
 
-        {/* 💋 人妻の蜜 */}
-        <Link href="/mitsu" className="group relative overflow-hidden rounded-2xl border-4 border-purple-600 transform hover:-translate-y-2 transition-all duration-300 shadow-2xl shadow-purple-500/30">
+        {/* 💋 人妻の蜜（外部リンク） */}
+        <a href="https://h-mitsu.com" target="_blank" rel="noopener noreferrer" className="group relative overflow-hidden rounded-2xl border-4 border-purple-600 transform hover:-translate-y-2 transition-all duration-300 shadow-2xl shadow-purple-500/30">
           <Image src="/main_mitsu.jpg" alt="人妻の蜜" fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
           <div className="absolute inset-0 bg-gradient-to-t from-purple-900/90 via-purple-500/50 to-transparent mix-blend-multiply"></div>
 
@@ -72,10 +70,10 @@ export default function Home() {
             </h2>
             <p className="text-purple-200 font-bold mb-4 text-sm drop-shadow">西船橋・葛西・錦糸町</p>
             <div className="bg-white/90 text-purple-600 py-3 px-8 rounded-full font-black shadow-lg group-hover:bg-white transition-colors">
-              店舗を選択する ➡
+              公式サイトへ ➡
             </div>
           </div>
-        </Link>
+        </a>
       </div>
 
       {/* 3. 準備中エリア */}
