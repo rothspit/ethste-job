@@ -23,7 +23,7 @@ export default function RankingSection() {
       const { data } = await supabase
         .from('girls')
         .select('*')
-        .order('rank', { ascending: true, nullsFirst: false })
+        .order('ranking_order', { ascending: true })
         .limit(3)
 
       if (data) {

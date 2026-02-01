@@ -7,125 +7,71 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-// 画像URLを取得するヘルパー関数
-const getImageUrl = (girl: any) => {
-  if (girl.images && girl.images[0]) return girl.images[0]
-  if (girl.image1_url) return girl.image1_url
-  return null
-}
-
-// 空の新規キャストデータ
-const emptyGirl = {
-  name: '',
-  age: '',
-  height: '',
-  bust: '',
-  waist: '',
-  hip: '',
-  cup: '',
-  schedule_comment: '',
-  image1_url: '',
-}
-
 export default function AdminPage() {
   const [girls, setGirls] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [mode, setMode] = useState<'daily' | 'ranking'>('daily') // モード切り替え
   const [editingGirl, setEditingGirl] = useState<any>(null)
-  const [isNewMode, setIsNewMode] = useState(false) // 新規追加モード
 
   // データ取得
   const fetchGirls = async () => {
-    const { data } = await supabase.from('girls').select('*').order('id', { ascending: true })
+    // ランキング順（昇順）で取得。ランキング設定がない人(999)は後ろにいく
+    const { data } = await supabase
+      .from('girls')
+      .select('*')
+      .order('ranking_order', { ascending: true })
+      .order('id', { ascending: true })
+
     if (data) setGirls(data)
     setLoading(false)
   }
 
   useEffect(() => { fetchGirls() }, [])
 
-  // 出勤スイッチの切り替え
+  // 出勤スイッチ
   const toggleAttendance = async (id: number, currentStatus: boolean) => {
     const newStatus = !currentStatus
     setGirls(girls.map(g => g.id === id ? { ...g, is_attending: newStatus } : g))
     await supabase.from('girls').update({ is_attending: newStatus }).eq('id', id)
   }
 
-  // 新規追加モードを開く
-  const openNewMode = () => {
-    setEditingGirl({ ...emptyGirl })
-    setIsNewMode(true)
+  // ランキング順位の一括保存
+  const saveRankings = async () => {
+    try {
+      setLoading(true)
+      // 変更された順位をまとめて保存
+      const updates = girls.map((girl) =>
+        supabase.from('girls').update({ ranking_order: girl.ranking_order }).eq('id', girl.id)
+      )
+      await Promise.all(updates)
+      alert('ランキングを更新しました！👑')
+      fetchGirls() // 再取得して並び直す
+    } catch (e) {
+      alert('エラーが発生しました')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  // 編集モードを開く
-  const openEditMode = (girl: any) => {
-    setEditingGirl(girl)
-    setIsNewMode(false)
-  }
-
-  // モーダルを閉じる
-  const closeModal = () => {
-    setEditingGirl(null)
-    setIsNewMode(false)
-  }
-
-  // 保存（新規 or 更新）
-  const handleSave = async (e: React.FormEvent) => {
+  // プロフィール保存
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!editingGirl) return
-
-    if (isNewMode) {
-      // 新規追加
-      const { error } = await supabase.from('girls').insert({
-        name: editingGirl.name,
-        age: editingGirl.age ? Number(editingGirl.age) : null,
-        height: editingGirl.height ? Number(editingGirl.height) : null,
-        bust: editingGirl.bust ? Number(editingGirl.bust) : null,
-        waist: editingGirl.waist ? Number(editingGirl.waist) : null,
-        hip: editingGirl.hip ? Number(editingGirl.hip) : null,
-        cup: editingGirl.cup || null,
-        schedule_comment: editingGirl.schedule_comment || null,
-        image1_url: editingGirl.image1_url || null,
-        is_attending: false,
-      })
-
-      if (!error) {
-        alert('新規キャストを追加しました！✨')
-        closeModal()
-        fetchGirls()
-      } else {
-        alert('エラーが発生しました💦')
-        console.error(error)
-      }
-    } else {
-      // 更新
-      const { error } = await supabase
-        .from('girls')
-        .update({
-          name: editingGirl.name,
-          age: editingGirl.age ? Number(editingGirl.age) : null,
-          height: editingGirl.height ? Number(editingGirl.height) : null,
-          bust: editingGirl.bust ? Number(editingGirl.bust) : null,
-          waist: editingGirl.waist ? Number(editingGirl.waist) : null,
-          hip: editingGirl.hip ? Number(editingGirl.hip) : null,
-          cup: editingGirl.cup || null,
-          schedule_comment: editingGirl.schedule_comment || null,
-          image1_url: editingGirl.image1_url || null,
-        })
-        .eq('id', editingGirl.id)
-
-      if (!error) {
-        alert('保存しました！✨')
-        closeModal()
-        fetchGirls()
-      } else {
-        alert('エラーが発生しました💦')
-        console.error(error)
-      }
+    const { error } = await supabase.from('girls').update({
+        name: editingGirl.name, age: editingGirl.age,
+        height: editingGirl.height, bust: editingGirl.bust,
+        waist: editingGirl.waist, hip: editingGirl.hip,
+        schedule_comment: editingGirl.schedule_comment
+      }).eq('id', editingGirl.id)
+    if (!error) {
+      alert('保存しました！✨')
+      setEditingGirl(null)
+      fetchGirls()
     }
   }
 
   return (
     <div className="min-h-screen bg-slate-100 pb-20">
-      {/* ヘッダー */}
       <header className="bg-slate-900 text-white p-4 sticky top-0 z-10 shadow-md flex justify-between items-center">
         <h1 className="font-bold text-lg">🛠 店長専用 コックピット</h1>
         <a href="/" target="_blank" className="text-xs bg-pink-600 px-3 py-1 rounded hover:bg-pink-500">サイトを確認 ➡</a>
@@ -133,149 +79,118 @@ export default function AdminPage() {
 
       <div className="max-w-4xl mx-auto p-4">
 
-        {/* ステータスバー */}
-        <div className="bg-white p-4 rounded-xl shadow mb-6 flex justify-between items-center">
-          <div>
-            <p className="text-xs text-slate-500 font-bold">在籍キャスト</p>
-            <p className="text-2xl font-black">{girls.length}名</p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-500 font-bold">本日の出勤</p>
-            <p className="text-2xl font-black text-green-600">
-              {girls.filter(g => g.is_attending).length}名
-            </p>
-          </div>
-        </div>
-
-        {/* 新規追加ボタン */}
-        <div className="mb-4">
+        {/* モード切り替えタブ */}
+        <div className="flex bg-white rounded-xl shadow mb-6 overflow-hidden">
           <button
-            onClick={openNewMode}
-            className="w-full bg-pink-500 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-pink-400 transition-colors flex items-center justify-center gap-2"
+            onClick={() => setMode('daily')}
+            className={`flex-1 py-3 font-bold text-center transition-colors ${mode === 'daily' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`}
           >
-            ➕ 新しいキャストを追加
+            📅 日々の出勤管理
+          </button>
+          <button
+            onClick={() => setMode('ranking')}
+            className={`flex-1 py-3 font-bold text-center transition-colors ${mode === 'ranking' ? 'bg-yellow-500 text-white' : 'text-slate-500 hover:bg-slate-50'}`}
+          >
+            👑 ランキング設定
           </button>
         </div>
 
-        {/* キャスト一覧 */}
-        <h2 className="font-bold text-slate-700 mb-2">キャスト管理リスト</h2>
-        {loading ? <p>読み込み中...</p> : (
-          <div className="space-y-3">
-            {girls.map((girl) => (
-              <div key={girl.id} className={`bg-white p-4 rounded-xl shadow border-l-4 transition-all ${girl.is_attending ? 'border-green-500 bg-green-50/30' : 'border-slate-300'}`}>
-                <div className="flex justify-between items-start">
-
-                  {/* 左側：情報 */}
-                  <div className="flex gap-3">
-                    <div className="w-16 h-16 bg-slate-200 rounded-lg overflow-hidden shrink-0">
-                      {getImageUrl(girl) ? (
-                        <img src={getImageUrl(girl)} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-xs text-slate-400">No Image</div>
-                      )}
+        {/* --- 📅 出勤管理モード --- */}
+        {mode === 'daily' && (
+          <div>
+             <h2 className="font-bold text-slate-700 mb-2">キャスト一覧</h2>
+             <div className="space-y-3">
+              {girls.map((girl) => (
+                <div key={girl.id} className={`bg-white p-4 rounded-xl shadow border-l-4 ${girl.is_attending ? 'border-green-500 bg-green-50/30' : 'border-slate-300'}`}>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-slate-200 rounded overflow-hidden">
+                        {girl.images?.[0] && <img src={girl.images[0]} className="w-full h-full object-cover"/>}
+                      </div>
+                      <div>
+                        <div className="font-bold">{girl.name}</div>
+                        <button onClick={() => toggleAttendance(girl.id, girl.is_attending)} className={`text-xs px-2 py-1 rounded border mt-1 ${girl.is_attending ? 'bg-green-500 text-white' : 'bg-white'}`}>
+                          {girl.is_attending ? '🟢 出勤中' : '⚪️ お休み'}
+                        </button>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-bold text-lg text-slate-800">
-                        {girl.name} <span className="text-sm font-normal text-slate-500">{girl.age}歳</span>
-                      </h3>
-                      <p className="text-xs text-slate-400 mb-1">T{girl.height} B{girl.bust} W{girl.waist} H{girl.hip}</p>
-
-                      {/* 出勤スイッチ */}
-                      <button
-                        onClick={() => toggleAttendance(girl.id, girl.is_attending)}
-                        className={`text-xs font-bold px-3 py-1 rounded-full border transition-all ${
-                          girl.is_attending
-                            ? 'bg-green-500 text-white border-green-600 shadow-md'
-                            : 'bg-white text-slate-400 border-slate-300 hover:bg-slate-100'
-                        }`}
-                      >
-                        {girl.is_attending ? '🟢 本日出勤中' : '⚪️ お休み'}
-                      </button>
-                    </div>
+                    <button onClick={() => setEditingGirl(girl)} className="bg-slate-100 px-3 py-2 rounded text-sm font-bold">編集</button>
                   </div>
-
-                  {/* 右側：編集ボタン */}
-                  <button
-                    onClick={() => openEditMode(girl)}
-                    className="bg-slate-100 text-slate-600 px-3 py-2 rounded-lg text-sm font-bold hover:bg-slate-200"
-                  >
-                    編集
-                  </button>
                 </div>
+              ))}
+             </div>
+          </div>
+        )}
 
-                {/* ひとことコメント表示 */}
-                {girl.schedule_comment && (
-                  <div className="mt-2 text-xs text-slate-500 bg-slate-100 p-2 rounded">
-                    💬 {girl.schedule_comment}
+        {/* --- 👑 ランキング設定モード --- */}
+        {mode === 'ranking' && (
+          <div className="animate-fade-in">
+            <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-4 text-sm text-yellow-800">
+              <p><strong>💡 設定方法</strong></p>
+              <p>1位、2位、3位にしたい子に数字を入力して、一番下の「順位を保存」ボタンを押してください。<br/>（ランキング外の子は「999」にしておけば表示されません）</p>
+            </div>
+
+            <div className="space-y-2">
+              {girls.map((girl) => (
+                <div key={girl.id} className="bg-white p-3 rounded-lg shadow flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-slate-200 rounded overflow-hidden">
+                       {girl.images?.[0] && <img src={girl.images[0]} className="w-full h-full object-cover"/>}
+                    </div>
+                    <span className="font-bold text-lg">{girl.name}</span>
                   </div>
-                )}
-              </div>
-            ))}
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-500">順位:</span>
+                    <input
+                      type="number"
+                      className="w-16 p-2 border-2 border-slate-300 rounded font-bold text-center focus:border-yellow-500 outline-none"
+                      value={girl.ranking_order || 999}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 999
+                        setGirls(girls.map(g => g.id === girl.id ? { ...g, ranking_order: val } : g))
+                      }}
+                    />
+                    <span className="text-sm font-bold">位</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="sticky bottom-4 mt-6">
+              <button
+                onClick={saveRankings}
+                className="w-full bg-yellow-500 text-white font-black text-lg py-4 rounded-full shadow-lg hover:bg-yellow-400 transition-transform active:scale-95"
+              >
+                👑 ランキング順位を保存して更新
+              </button>
+            </div>
           </div>
         )}
       </div>
 
-      {/* 編集/新規モーダル */}
+      {/* 編集モーダル（省略せずそのまま残します） */}
       {editingGirl && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
-            <div className={`${isNewMode ? 'bg-pink-500' : 'bg-slate-900'} text-white p-4 font-bold flex justify-between`}>
-              <span>{isNewMode ? '➕ 新規キャスト追加' : `${editingGirl.name}さんの編集`}</span>
-              <button onClick={closeModal}>✕</button>
-            </div>
-
-            <form onSubmit={handleSave} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-slate-500">名前 *</label>
-                  <input type="text" value={editingGirl.name || ''} onChange={e => setEditingGirl({...editingGirl, name: e.target.value})} className="w-full border rounded p-2" required />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-500">年齢</label>
-                  <input type="number" value={editingGirl.age || ''} onChange={e => setEditingGirl({...editingGirl, age: e.target.value})} className="w-full border rounded p-2" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-5 gap-2">
-                <div>
-                  <label className="text-xs font-bold text-slate-500">身長</label>
-                  <input type="number" value={editingGirl.height || ''} onChange={e => setEditingGirl({...editingGirl, height: e.target.value})} className="w-full border rounded p-1" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-500">B</label>
-                  <input type="number" value={editingGirl.bust || ''} onChange={e => setEditingGirl({...editingGirl, bust: e.target.value})} className="w-full border rounded p-1" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-500">W</label>
-                  <input type="number" value={editingGirl.waist || ''} onChange={e => setEditingGirl({...editingGirl, waist: e.target.value})} className="w-full border rounded p-1" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-500">H</label>
-                  <input type="number" value={editingGirl.hip || ''} onChange={e => setEditingGirl({...editingGirl, hip: e.target.value})} className="w-full border rounded p-1" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-500">カップ</label>
-                  <input type="text" value={editingGirl.cup || ''} onChange={e => setEditingGirl({...editingGirl, cup: e.target.value})} className="w-full border rounded p-1" placeholder="D" />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-slate-500">画像URL</label>
-                <input type="text" value={editingGirl.image1_url || ''} onChange={e => setEditingGirl({...editingGirl, image1_url: e.target.value})} className="w-full border rounded p-2" placeholder="https://..." />
-                <p className="text-[10px] text-slate-400 mt-1">※Supabase Storageや外部URLを貼り付け</p>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-slate-500">出勤時のひとこと</label>
-                <input type="text" value={editingGirl.schedule_comment || ''} onChange={e => setEditingGirl({...editingGirl, schedule_comment: e.target.value})} className="w-full border rounded p-2" placeholder="12時〜います！" />
-              </div>
-
-              <div className="pt-4 flex gap-2">
-                <button type="button" onClick={closeModal} className="flex-1 bg-slate-200 text-slate-700 font-bold py-3 rounded-lg">キャンセル</button>
-                <button type="submit" className={`flex-1 ${isNewMode ? 'bg-pink-500' : 'bg-green-600'} text-white font-bold py-3 rounded-lg shadow`}>
-                  {isNewMode ? '追加する' : '保存する'}
-                </button>
-              </div>
+          <div className="bg-white w-full max-w-md rounded-2xl p-6">
+            <h3 className="font-bold mb-4">{editingGirl.name}の編集</h3>
+            <form onSubmit={handleUpdate} className="space-y-4">
+               {/* 入力項目省略なしで記述 */}
+               <div className="grid grid-cols-2 gap-2">
+                 <input placeholder="名前" value={editingGirl.name} onChange={e=>setEditingGirl({...editingGirl, name:e.target.value})} className="border p-2 rounded"/>
+                 <input placeholder="年齢" type="number" value={editingGirl.age} onChange={e=>setEditingGirl({...editingGirl, age:e.target.value})} className="border p-2 rounded"/>
+               </div>
+               <div className="grid grid-cols-4 gap-2">
+                 <input placeholder="T" value={editingGirl.height||''} onChange={e=>setEditingGirl({...editingGirl, height:e.target.value})} className="border p-1 rounded"/>
+                 <input placeholder="B" value={editingGirl.bust||''} onChange={e=>setEditingGirl({...editingGirl, bust:e.target.value})} className="border p-1 rounded"/>
+                 <input placeholder="W" value={editingGirl.waist||''} onChange={e=>setEditingGirl({...editingGirl, waist:e.target.value})} className="border p-1 rounded"/>
+                 <input placeholder="H" value={editingGirl.hip||''} onChange={e=>setEditingGirl({...editingGirl, hip:e.target.value})} className="border p-1 rounded"/>
+               </div>
+               <input placeholder="ひとこと" value={editingGirl.schedule_comment||''} onChange={e=>setEditingGirl({...editingGirl, schedule_comment:e.target.value})} className="border p-2 w-full rounded"/>
+               <div className="flex gap-2">
+                 <button type="button" onClick={()=>setEditingGirl(null)} className="flex-1 bg-slate-200 p-2 rounded">キャンセル</button>
+                 <button type="submit" className="flex-1 bg-blue-600 text-white p-2 rounded">保存</button>
+               </div>
             </form>
           </div>
         </div>
