@@ -7,6 +7,13 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+// 画像URLを取得するヘルパー関数
+const getImageUrl = (girl: any) => {
+  if (girl.images && girl.images[0]) return girl.images[0]
+  if (girl.image1_url) return girl.image1_url
+  return null
+}
+
 export default function AdminPage() {
   const [girls, setGirls] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -93,8 +100,8 @@ export default function AdminPage() {
                   {/* 左側：情報 */}
                   <div className="flex gap-3">
                     <div className="w-16 h-16 bg-slate-200 rounded-lg overflow-hidden shrink-0">
-                      {girl.images?.[0] ? (
-                        <img src={girl.images[0]} className="w-full h-full object-cover" />
+                      {getImageUrl(girl) ? (
+                        <img src={getImageUrl(girl)} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-xs text-slate-400">No Image</div>
                       )}

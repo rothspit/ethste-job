@@ -1,25 +1,30 @@
-'use client' // 👈 これが重要です（データベースを使うため）
+'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 
-// Supabaseに接続する準備
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+// 画像URLを取得するヘルパー関数
+const getImageUrl = (girl: any) => {
+  if (girl.images && girl.images[0]) return girl.images[0]
+  if (girl.image1_url) return girl.image1_url
+  return null
+}
+
 export default function RankingSection() {
   const [girls, setGirls] = useState<any[]>([])
 
-  // 画面が表示されたら、データベースから女の子を取ってくる
   useEffect(() => {
     const fetchGirls = async () => {
       const { data } = await supabase
         .from('girls')
         .select('*')
-        .order('id', { ascending: true }) // ID順（登録順）に表示
-        .limit(3) // ランキングなのでとりあえず3人表示
+        .order('id', { ascending: true })
+        .limit(3)
 
       if (data) {
         setGirls(data)
@@ -28,7 +33,6 @@ export default function RankingSection() {
     fetchGirls()
   }, [])
 
-  // もしデータが0人の場合（まだ登録がない場合）
   if (girls.length === 0) {
     return (
       <section className="py-10 px-4 text-center">
@@ -45,43 +49,45 @@ export default function RankingSection() {
       </h3>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
-        {girls.map((girl, index) => (
-          <Link key={girl.id} href={`/girls/${girl.id}`} className="group bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all relative">
-            {/* 順位バッジ */}
-            <div className={`absolute top-0 left-0 text-white text-xs font-black px-3 py-1 rounded-br-lg z-10 ${
-              index === 0 ? 'bg-yellow-400' : index === 1 ? 'bg-slate-400' : 'bg-orange-400'
-            }`}>
-              {index + 1}位
-            </div>
-
-            {/* 画像エリア */}
-            <div className="aspect-[3/4] bg-slate-100 relative overflow-hidden">
-              {girl.images && girl.images[0] ? (
-                <img
-                  src={girl.images[0]}
-                  alt={girl.name}
-                  className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full text-slate-400 font-bold">No Image</div>
-              )}
-            </div>
-
-            <div className="p-3">
-              <div className="flex justify-between items-end mb-1">
-                <h4 className="font-bold text-lg text-slate-800">{girl.name}</h4>
-                <span className="text-sm text-pink-500 font-bold">{girl.age ? `${girl.age}歳` : ''}</span>
+        {girls.map((girl, index) => {
+          const imageUrl = getImageUrl(girl)
+          return (
+            <Link key={girl.id} href={`/girls/${girl.id}`} className="group bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all relative">
+              {/* 順位バッジ */}
+              <div className={`absolute top-0 left-0 text-white text-xs font-black px-3 py-1 rounded-br-lg z-10 ${
+                index === 0 ? 'bg-yellow-400' : index === 1 ? 'bg-slate-400' : 'bg-orange-400'
+              }`}>
+                {index + 1}位
               </div>
-              {/* スリーサイズなどがあれば表示（なければ隠す） */}
-              <p className="text-xs text-slate-500">
-                {girl.height && `T${girl.height} `}
-                {girl.bust && `B${girl.bust} `}
-                {girl.waist && `W${girl.waist} `}
-                {girl.hip && `H${girl.hip}`}
-              </p>
-            </div>
-          </Link>
-        ))}
+
+              {/* 画像エリア */}
+              <div className="aspect-[3/4] bg-slate-100 relative overflow-hidden">
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt={girl.name}
+                    className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-slate-400 font-bold">No Image</div>
+                )}
+              </div>
+
+              <div className="p-3">
+                <div className="flex justify-between items-end mb-1">
+                  <h4 className="font-bold text-lg text-slate-800">{girl.name}</h4>
+                  <span className="text-sm text-pink-500 font-bold">{girl.age ? `${girl.age}歳` : ''}</span>
+                </div>
+                <p className="text-xs text-slate-500">
+                  {girl.height && `T${girl.height} `}
+                  {girl.bust && `B${girl.bust} `}
+                  {girl.waist && `W${girl.waist} `}
+                  {girl.hip && `H${girl.hip}`}
+                </p>
+              </div>
+            </Link>
+          )
+        })}
       </div>
 
       <div className="text-center mt-8">
