@@ -23,7 +23,7 @@ export default function RankingSection() {
       const { data } = await supabase
         .from('girls')
         .select('*')
-        .order('id', { ascending: true })
+        .order('rank', { ascending: true, nullsFirst: false })
         .limit(3)
 
       if (data) {
@@ -59,6 +59,13 @@ export default function RankingSection() {
               }`}>
                 {index + 1}位
               </div>
+
+              {/* 新人バッジ */}
+              {girl.is_new && (
+                <div className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-bl-lg z-10 animate-pulse">
+                  新人
+                </div>
+              )}
 
               {/* 画像エリア */}
               <div className="aspect-[3/4] bg-slate-100 relative overflow-hidden">
