@@ -4,12 +4,11 @@ import { useParams } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { Pagination, Navigation, Autoplay } from 'swiper/modules'
+import { Pagination, Autoplay } from 'swiper/modules'
 
 // Swiperのスタイル読み込み
 import 'swiper/css'
 import 'swiper/css/pagination'
-import 'swiper/css/navigation'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -39,34 +38,52 @@ export default function GirlDetailPage() {
   if (loading) return <div className="min-h-screen bg-slate-50 pt-20 text-center">読み込み中...</div>
   if (!girl) return <div className="min-h-screen bg-slate-50 pt-20 text-center">データが見つかりません🙇‍♂️</div>
 
+  // 画像配列を作成（images配列 または image1_url〜image5_url に対応）
+  const getImages = () => {
+    if (girl.images && girl.images.length > 0) {
+      return girl.images
+    }
+    // 個別フィールドから配列を作成
+    const imgs = []
+    if (girl.image1_url) imgs.push(girl.image1_url)
+    if (girl.image2_url) imgs.push(girl.image2_url)
+    if (girl.image3_url) imgs.push(girl.image3_url)
+    if (girl.image4_url) imgs.push(girl.image4_url)
+    if (girl.image5_url) imgs.push(girl.image5_url)
+    return imgs
+  }
+  const images = getImages()
+
   return (
     <main className="bg-slate-50 min-h-screen pb-24">
 
-      {/* 1. ヘッダー（戻るボタンのみシンプルに） */}
-      <div className="fixed top-0 z-50 w-full bg-gradient-to-b from-black/50 to-transparent p-4">
-        <Link href="/funabashi" className="inline-flex items-center justify-center bg-black/40 text-white rounded-full w-10 h-10 backdrop-blur">
-          ⬅
+      {/* 1. ヘッダー（戻るボタン） */}
+      <div className="fixed top-0 z-50 w-full bg-gradient-to-b from-black/60 to-transparent p-4">
+        <Link href="/funabashi" className="inline-flex items-center justify-center bg-black/50 text-white rounded-full w-10 h-10 backdrop-blur text-lg">
+          ←
         </Link>
       </div>
 
       {/* 2. 写真スライドショー */}
       <div className="bg-slate-200">
-        {girl.images && girl.images.length > 0 ? (
+        {images.length > 0 ? (
           <Swiper
-            modules={[Pagination, Navigation, Autoplay]}
+            modules={[Pagination, Autoplay]}
             pagination={{ clickable: true }}
-            autoplay={{ delay: 3000, disableOnInteraction: false }}
-            loop={true}
-            className="w-full h-[500px] md:h-[600px]"
+            autoplay={{ delay: 3500, disableOnInteraction: false }}
+            loop={images.length > 1}
+            className="w-full aspect-[3/4] max-h-[70vh]"
           >
-            {girl.images.map((img: string, idx: number) => (
+            {images.map((img: string, idx: number) => (
               <SwiperSlide key={idx}>
                 <img src={img} alt={`${girl.name}の写真${idx + 1}`} className="w-full h-full object-cover" />
               </SwiperSlide>
             ))}
           </Swiper>
         ) : (
-          <div className="h-[400px] flex items-center justify-center text-slate-400">No Image</div>
+          <div className="aspect-[3/4] max-h-[70vh] flex items-center justify-center text-slate-400 text-lg">
+            No Image
+          </div>
         )}
       </div>
 
@@ -74,11 +91,11 @@ export default function GirlDetailPage() {
       <div className="max-w-2xl mx-auto -mt-6 relative z-10 px-4">
         <div className="bg-white rounded-2xl shadow-xl p-6">
 
-          {/* 名前とキャッチコピー */}
+          {/* 名前 */}
           <div className="text-center mb-6 border-b border-slate-100 pb-4">
-            <h1 className="text-3xl font-black text-slate-800 mb-2">{girl.name}</h1>
+            <h1 className="text-3xl font-black text-slate-800 mb-1">{girl.name}</h1>
             <p className="text-pink-500 font-bold text-sm">
-              {girl.age}歳 ({girl.birth_month || '??'}月{girl.birth_day || '??'}日生まれ)
+              {girl.age}歳
             </p>
             {girl.schedule_comment && (
               <div className="mt-3 bg-green-50 text-green-700 text-xs px-3 py-1 rounded-full inline-block font-bold border border-green-200">
@@ -87,65 +104,48 @@ export default function GirlDetailPage() {
             )}
           </div>
 
-          {/* スリーサイズ・身体情報 */}
+          {/* スリーサイズ（他ページと同じ表記） */}
+          <div className="text-center mb-6">
+            <p className="text-pink-500 font-bold text-lg">
+              T{girl.height || '??'} B{girl.bust || '??'}({girl.cup || '?'}) W{girl.waist || '??'} H{girl.hip || '??'}
+            </p>
+          </div>
+
+          {/* スリーサイズカード */}
           <div className="grid grid-cols-4 gap-2 text-center mb-8">
-            <div className="bg-pink-50 rounded-lg p-2">
+            <div className="bg-pink-50 rounded-lg p-3">
               <div className="text-[10px] text-slate-500 font-bold">身長</div>
-              <div className="font-black text-slate-800 text-lg">T{girl.height}</div>
+              <div className="font-black text-slate-800 text-xl">{girl.height || '??'}</div>
             </div>
-            <div className="bg-pink-50 rounded-lg p-2">
+            <div className="bg-pink-50 rounded-lg p-3">
               <div className="text-[10px] text-slate-500 font-bold">バスト</div>
-              <div className="font-black text-pink-500 text-lg">B{girl.bust}<span className="text-xs text-slate-500 font-normal">({girl.cup || '?'})</span></div>
+              <div className="font-black text-pink-500 text-xl">{girl.bust || '??'}<span className="text-xs text-slate-500">({girl.cup || '?'})</span></div>
             </div>
-            <div className="bg-pink-50 rounded-lg p-2">
+            <div className="bg-pink-50 rounded-lg p-3">
               <div className="text-[10px] text-slate-500 font-bold">ウエスト</div>
-              <div className="font-black text-slate-800 text-lg">W{girl.waist}</div>
+              <div className="font-black text-slate-800 text-xl">{girl.waist || '??'}</div>
             </div>
-            <div className="bg-pink-50 rounded-lg p-2">
+            <div className="bg-pink-50 rounded-lg p-3">
               <div className="text-[10px] text-slate-500 font-bold">ヒップ</div>
-              <div className="font-black text-slate-800 text-lg">H{girl.hip}</div>
+              <div className="font-black text-slate-800 text-xl">{girl.hip || '??'}</div>
             </div>
           </div>
 
-          {/* 店長コメント（セールスポイント） */}
-          <div className="bg-slate-50 rounded-xl p-5 border border-slate-200 relative mb-8">
+          {/* 店長コメント */}
+          <div className="bg-slate-50 rounded-xl p-5 border border-slate-200 relative mb-6">
             <div className="absolute -top-3 left-4 bg-slate-800 text-white text-[10px] font-bold px-3 py-1 rounded">
               STAFF COMMENT
             </div>
             <p className="text-sm text-slate-700 leading-relaxed pt-2">
-              {/* データがなければデフォルト文を表示 */}
-              {girl.description || 'まだ紹介文が登録されていません。詳細はお問い合わせください！清楚で可愛らしい雰囲気の女の子です。'}
+              {girl.description || girl.message || 'まだ紹介文が登録されていません。お問い合わせください！'}
             </p>
           </div>
-
-          {/* 基本データ表 */}
-          <h3 className="font-bold text-slate-800 mb-3 text-lg">💎 基本プロフィール</h3>
-          <table className="w-full text-sm text-left border-collapse">
-            <tbody className="divide-y divide-slate-100">
-              <tr>
-                <th className="py-3 text-slate-500 font-normal w-1/3">血液型</th>
-                <td className="py-3 font-bold text-slate-800">{girl.blood_type || '非公開'}型</td>
-              </tr>
-              <tr>
-                <th className="py-3 text-slate-500 font-normal">職業</th>
-                <td className="py-3 font-bold text-slate-800">{girl.job || '秘密'}</td>
-              </tr>
-              <tr>
-                <th className="py-3 text-slate-500 font-normal">性格</th>
-                <td className="py-3 font-bold text-slate-800">{girl.personality || '優しくて癒やし系'}</td>
-              </tr>
-              <tr>
-                <th className="py-3 text-slate-500 font-normal">趣味</th>
-                <td className="py-3 font-bold text-slate-800">{girl.hobby || 'カフェ巡り、映画'}</td>
-              </tr>
-            </tbody>
-          </table>
 
         </div>
       </div>
 
       {/* 4. 予約ボタン（画面下固定） */}
-      <div className="fixed bottom-0 w-full bg-white border-t border-slate-200 p-3 shadow-lg z-50 safe-area-bottom">
+      <div className="fixed bottom-0 w-full bg-white border-t border-slate-200 p-3 shadow-lg z-50">
         <div className="max-w-2xl mx-auto flex gap-3">
           <Link href="/chat" className="flex-1 bg-green-500 text-white font-bold py-3 rounded-lg text-center shadow active:scale-95 transition-transform flex items-center justify-center gap-2">
             <span>💬 LINE予約</span>
