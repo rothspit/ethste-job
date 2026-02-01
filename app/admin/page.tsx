@@ -14,10 +14,24 @@ const getImageUrl = (girl: any) => {
   return null
 }
 
+// 空の新規キャストデータ
+const emptyGirl = {
+  name: '',
+  age: '',
+  height: '',
+  bust: '',
+  waist: '',
+  hip: '',
+  cup: '',
+  schedule_comment: '',
+  image1_url: '',
+}
+
 export default function AdminPage() {
   const [girls, setGirls] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [editingGirl, setEditingGirl] = useState<any>(null) // 編集中の女の子
+  const [editingGirl, setEditingGirl] = useState<any>(null)
+  const [isNewMode, setIsNewMode] = useState(false) // 新規追加モード
 
   // データ取得
   const fetchGirls = async () => {
@@ -31,37 +45,81 @@ export default function AdminPage() {
   // 出勤スイッチの切り替え
   const toggleAttendance = async (id: number, currentStatus: boolean) => {
     const newStatus = !currentStatus
-    // 画面を先に更新（サクサク感のため）
     setGirls(girls.map(g => g.id === id ? { ...g, is_attending: newStatus } : g))
-
-    // 裏で保存
     await supabase.from('girls').update({ is_attending: newStatus }).eq('id', id)
   }
 
-  // プロフィール更新保存
-  const handleUpdate = async (e: React.FormEvent) => {
+  // 新規追加モードを開く
+  const openNewMode = () => {
+    setEditingGirl({ ...emptyGirl })
+    setIsNewMode(true)
+  }
+
+  // 編集モードを開く
+  const openEditMode = (girl: any) => {
+    setEditingGirl(girl)
+    setIsNewMode(false)
+  }
+
+  // モーダルを閉じる
+  const closeModal = () => {
+    setEditingGirl(null)
+    setIsNewMode(false)
+  }
+
+  // 保存（新規 or 更新）
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!editingGirl) return
 
-    const { error } = await supabase
-      .from('girls')
-      .update({
+    if (isNewMode) {
+      // 新規追加
+      const { error } = await supabase.from('girls').insert({
         name: editingGirl.name,
-        age: editingGirl.age,
-        height: editingGirl.height,
-        bust: editingGirl.bust,
-        waist: editingGirl.waist,
-        hip: editingGirl.hip,
-        schedule_comment: editingGirl.schedule_comment
+        age: editingGirl.age ? Number(editingGirl.age) : null,
+        height: editingGirl.height ? Number(editingGirl.height) : null,
+        bust: editingGirl.bust ? Number(editingGirl.bust) : null,
+        waist: editingGirl.waist ? Number(editingGirl.waist) : null,
+        hip: editingGirl.hip ? Number(editingGirl.hip) : null,
+        cup: editingGirl.cup || null,
+        schedule_comment: editingGirl.schedule_comment || null,
+        image1_url: editingGirl.image1_url || null,
+        is_attending: false,
       })
-      .eq('id', editingGirl.id)
 
-    if (!error) {
-      alert('保存しました！✨')
-      setEditingGirl(null) // モーダル閉じる
-      fetchGirls() // データ再取得
+      if (!error) {
+        alert('新規キャストを追加しました！✨')
+        closeModal()
+        fetchGirls()
+      } else {
+        alert('エラーが発生しました💦')
+        console.error(error)
+      }
     } else {
-      alert('エラーが発生しました💦')
+      // 更新
+      const { error } = await supabase
+        .from('girls')
+        .update({
+          name: editingGirl.name,
+          age: editingGirl.age ? Number(editingGirl.age) : null,
+          height: editingGirl.height ? Number(editingGirl.height) : null,
+          bust: editingGirl.bust ? Number(editingGirl.bust) : null,
+          waist: editingGirl.waist ? Number(editingGirl.waist) : null,
+          hip: editingGirl.hip ? Number(editingGirl.hip) : null,
+          cup: editingGirl.cup || null,
+          schedule_comment: editingGirl.schedule_comment || null,
+          image1_url: editingGirl.image1_url || null,
+        })
+        .eq('id', editingGirl.id)
+
+      if (!error) {
+        alert('保存しました！✨')
+        closeModal()
+        fetchGirls()
+      } else {
+        alert('エラーが発生しました💦')
+        console.error(error)
+      }
     }
   }
 
@@ -87,6 +145,16 @@ export default function AdminPage() {
               {girls.filter(g => g.is_attending).length}名
             </p>
           </div>
+        </div>
+
+        {/* 新規追加ボタン */}
+        <div className="mb-4">
+          <button
+            onClick={openNewMode}
+            className="w-full bg-pink-500 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-pink-400 transition-colors flex items-center justify-center gap-2"
+          >
+            ➕ 新しいキャストを追加
+          </button>
         </div>
 
         {/* キャスト一覧 */}
@@ -128,7 +196,7 @@ export default function AdminPage() {
 
                   {/* 右側：編集ボタン */}
                   <button
-                    onClick={() => setEditingGirl(girl)}
+                    onClick={() => openEditMode(girl)}
                     className="bg-slate-100 text-slate-600 px-3 py-2 rounded-lg text-sm font-bold hover:bg-slate-200"
                   >
                     編集
@@ -147,28 +215,28 @@ export default function AdminPage() {
         )}
       </div>
 
-      {/* 編集モーダル（画面の上に重なって出るやつ） */}
+      {/* 編集/新規モーダル */}
       {editingGirl && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
-            <div className="bg-slate-900 text-white p-4 font-bold flex justify-between">
-              <span>{editingGirl.name}さんの編集</span>
-              <button onClick={() => setEditingGirl(null)}>✕</button>
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+            <div className={`${isNewMode ? 'bg-pink-500' : 'bg-slate-900'} text-white p-4 font-bold flex justify-between`}>
+              <span>{isNewMode ? '➕ 新規キャスト追加' : `${editingGirl.name}さんの編集`}</span>
+              <button onClick={closeModal}>✕</button>
             </div>
 
-            <form onSubmit={handleUpdate} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+            <form onSubmit={handleSave} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-slate-500">名前</label>
-                  <input type="text" value={editingGirl.name} onChange={e => setEditingGirl({...editingGirl, name: e.target.value})} className="w-full border rounded p-2" />
+                  <label className="text-xs font-bold text-slate-500">名前 *</label>
+                  <input type="text" value={editingGirl.name || ''} onChange={e => setEditingGirl({...editingGirl, name: e.target.value})} className="w-full border rounded p-2" required />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-slate-500">年齢</label>
-                  <input type="number" value={editingGirl.age} onChange={e => setEditingGirl({...editingGirl, age: e.target.value})} className="w-full border rounded p-2" />
+                  <input type="number" value={editingGirl.age || ''} onChange={e => setEditingGirl({...editingGirl, age: e.target.value})} className="w-full border rounded p-2" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-5 gap-2">
                 <div>
                   <label className="text-xs font-bold text-slate-500">身長</label>
                   <input type="number" value={editingGirl.height || ''} onChange={e => setEditingGirl({...editingGirl, height: e.target.value})} className="w-full border rounded p-1" />
@@ -185,16 +253,28 @@ export default function AdminPage() {
                   <label className="text-xs font-bold text-slate-500">H</label>
                   <input type="number" value={editingGirl.hip || ''} onChange={e => setEditingGirl({...editingGirl, hip: e.target.value})} className="w-full border rounded p-1" />
                 </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-500">カップ</label>
+                  <input type="text" value={editingGirl.cup || ''} onChange={e => setEditingGirl({...editingGirl, cup: e.target.value})} className="w-full border rounded p-1" placeholder="D" />
+                </div>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-500">出勤時のひとこと (例: 12時〜います！)</label>
-                <input type="text" value={editingGirl.schedule_comment || ''} onChange={e => setEditingGirl({...editingGirl, schedule_comment: e.target.value})} className="w-full border rounded p-2" placeholder="本日の予定など" />
+                <label className="text-xs font-bold text-slate-500">画像URL</label>
+                <input type="text" value={editingGirl.image1_url || ''} onChange={e => setEditingGirl({...editingGirl, image1_url: e.target.value})} className="w-full border rounded p-2" placeholder="https://..." />
+                <p className="text-[10px] text-slate-400 mt-1">※Supabase Storageや外部URLを貼り付け</p>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-500">出勤時のひとこと</label>
+                <input type="text" value={editingGirl.schedule_comment || ''} onChange={e => setEditingGirl({...editingGirl, schedule_comment: e.target.value})} className="w-full border rounded p-2" placeholder="12時〜います！" />
               </div>
 
               <div className="pt-4 flex gap-2">
-                <button type="button" onClick={() => setEditingGirl(null)} className="flex-1 bg-slate-200 text-slate-700 font-bold py-3 rounded-lg">キャンセル</button>
-                <button type="submit" className="flex-1 bg-green-600 text-white font-bold py-3 rounded-lg shadow">保存する</button>
+                <button type="button" onClick={closeModal} className="flex-1 bg-slate-200 text-slate-700 font-bold py-3 rounded-lg">キャンセル</button>
+                <button type="submit" className={`flex-1 ${isNewMode ? 'bg-pink-500' : 'bg-green-600'} text-white font-bold py-3 rounded-lg shadow`}>
+                  {isNewMode ? '追加する' : '保存する'}
+                </button>
               </div>
             </form>
           </div>
