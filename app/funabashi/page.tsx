@@ -1,8 +1,16 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { Noto_Sans_JP } from 'next/font/google'
 import PriceListIdol from '@/components/PriceListIdol'
 import RankingSection from '@/components/RankingSection'
 import ScheduleSection from '@/components/ScheduleSection'
+import UpdateNotice from '@/components/UpdateNotice'
+
+const baseFont = Noto_Sans_JP({
+  weight: ['700'],
+  subsets: ['latin'],
+  preload: false,
+})
 
 export default function FunabashiPage() {
   return (
@@ -11,22 +19,26 @@ export default function FunabashiPage() {
       {/* 1. ヘッダー */}
       <div className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur text-white shadow-lg border-b border-slate-700">
         <div className="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
-          <Link href="/" className="font-black text-xl italic tracking-tighter">
-            IDOL <span className="text-pink-500">GAKUEN</span>
+          <Link href="/" className={`${baseFont.className} text-xl font-black tracking-wider hover:opacity-80 transition-opacity`}>
+            アイドル<span className="text-pink-500">学園</span>
           </Link>
+
           <div className="flex items-center gap-2">
             <Link href="/recruit" className="bg-yellow-500 text-slate-900 text-[10px] font-black px-2 py-2 rounded shadow hover:bg-yellow-400">
               求人
             </Link>
-            <Link href="/chat" className="bg-green-500 text-white text-xs font-bold px-3 py-2 rounded-full shadow hover:bg-green-400">
-              💬 チャット
+            <Link href="/chat" className="bg-green-500 text-white text-xs font-bold px-3 py-2 rounded-full shadow hover:bg-green-400 flex items-center gap-1">
+              💬 <span className="hidden md:inline">チャット</span>
             </Link>
-            <Link href="/login" className="bg-pink-600 text-white text-xs font-bold px-3 py-2 rounded-full shadow hover:bg-pink-500">
-              🔑 ログイン
+            <Link href="/login" className="bg-pink-600 text-white text-xs font-bold px-3 py-2 rounded-full shadow hover:bg-pink-500 flex items-center gap-1">
+              🔑 <span className="hidden md:inline">ログイン</span>
             </Link>
           </div>
         </div>
       </div>
+
+      {/* 📢 告知バー */}
+      <UpdateNotice />
 
       {/* 2. メインビジュアル */}
       <div className="relative w-full max-w-2xl mx-auto">
