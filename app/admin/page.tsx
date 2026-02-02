@@ -108,7 +108,7 @@ export default function AdminPage() {
                         {girl.images?.[0] && <img src={girl.images[0]} className="w-full h-full object-cover"/>}
                       </div>
                       <div>
-                        <div className="font-bold">{girl.name}</div>
+                        <div className="font-bold text-slate-800">{girl.name}</div>
                         <button onClick={() => toggleAttendance(girl.id, girl.is_attending)} className={`text-xs px-2 py-1 rounded border mt-1 ${girl.is_attending ? 'bg-green-500 text-white' : 'bg-white'}`}>
                           {girl.is_attending ? '🟢 出勤中' : '⚪️ お休み'}
                         </button>
