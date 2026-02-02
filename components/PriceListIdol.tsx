@@ -50,7 +50,7 @@ export default function PriceListIdol() {
 
           <div className="flex justify-between items-center p-4 hover:bg-pink-50 transition-colors">
             <div>
-              <span className="font-bold text-slate-700 block">完全貸切 <span className="text-lg">180分</span></span>
+              <span className="font-bold text-slate-700 block"><span className="text-lg">180分</span></span>
             </div>
             <span className="font-black text-2xl text-pink-600">50,000<span className="text-sm text-slate-500">円</span></span>
           </div>
@@ -81,8 +81,8 @@ export default function PriceListIdol() {
         <div className="bg-white rounded-lg shadow border p-4">
           <h4 className="font-bold text-slate-700 border-b pb-2 mb-2">交通費・その他</h4>
           <ul className="text-sm space-y-2 text-slate-600">
-             <li className="flex justify-between"><span>船橋・西船橋</span> <span className="font-bold text-pink-500">無料送迎</span></li>
-             <li className="flex justify-between"><span>津田沼・市川</span> <span className="font-bold">1,000円</span></li>
+             <li className="flex justify-between"><span>西船橋駅前</span> <span className="font-bold text-pink-500">無料</span></li>
+             <li className="flex justify-between"><span>船橋・津田沼・市川</span> <span className="font-bold">1,000円〜</span></li>
              <li className="flex justify-between"><span>その他エリア</span> <span className="font-bold">応相談</span></li>
              <li className="text-xs mt-2 text-slate-400 border-t pt-2">
                ※各種クレジットカードご利用いただけます（手数料あり）
