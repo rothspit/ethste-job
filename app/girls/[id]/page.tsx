@@ -65,23 +65,23 @@ export default function GirlDetailPage() {
       </div>
 
       {/* 2. 写真スライドショー */}
-      <div className="bg-slate-200">
+      <div className="bg-black">
         {images.length > 0 ? (
           <Swiper
             modules={[Pagination, Autoplay]}
             pagination={{ clickable: true }}
             autoplay={{ delay: 3500, disableOnInteraction: false }}
             loop={images.length > 1}
-            className="w-full aspect-[3/4] max-h-[70vh]"
+            className="w-full"
           >
             {images.map((img: string, idx: number) => (
               <SwiperSlide key={idx}>
-                <img src={img} alt={`${girl.name}の写真${idx + 1}`} className="w-full h-full object-cover" />
+                <img src={img} alt={`${girl.name}の写真${idx + 1}`} className="w-full h-auto" />
               </SwiperSlide>
             ))}
           </Swiper>
         ) : (
-          <div className="aspect-[3/4] max-h-[70vh] flex items-center justify-center text-slate-400 text-lg">
+          <div className="h-64 flex items-center justify-center text-slate-400 text-lg">
             No Image
           </div>
         )}
