@@ -24,3 +24,77 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ============================================
+   Brand Theme Variables
+   defaults = idol-gakuen / ThemeInjector が上書き
+   ============================================ */
+:root {
+  --color-primary: #ec4899;
+  --color-primary-light: #f9a8d4;
+  --color-primary-dark: #be185d;
+  --color-secondary: #06b6d4;
+  --color-secondary-light: #67e8f9;
+  --color-secondary-dark: #0e7490;
+  --color-accent: #fbbf24;
+  --color-background-brand: #fdf2f8;
+  --color-surface: #ffffff;
+  --color-text-brand: #1f2937;
+  --color-text-muted: #6b7280;
+  --color-header-bg: #ec4899;
+  --color-header-text: #ffffff;
+  --color-footer-bg: #fbcfe8;
+  --color-footer-text: #9d174d;
+  --radius-button: 9999px;
+  --radius-card: 1rem;
+  --radius-input: 0.75rem;
+  --font-heading: "Rounded Mplus 1c", sans-serif;
+  --font-body: "Noto Sans JP", sans-serif;
+}
+
+/* ============================================
+   Pop Theme (idol-gakuen)
+   ============================================ */
+[data-theme="pop"] .btn-brand {
+  border-radius: 9999px;
+  box-shadow: 0 4px 0 var(--color-primary-dark);
+}
+[data-theme="pop"] .btn-brand:hover {
+  box-shadow: 0 2px 0 var(--color-primary-dark);
+  transform: translateY(2px);
+}
+[data-theme="pop"] .card-brand {
+  border: 2px solid var(--color-primary-light);
+  border-radius: var(--radius-card);
+}
+
+/* ============================================
+   Luxury Theme (hitomitsu)
+   ============================================ */
+[data-theme="luxury"] .btn-brand {
+  border-radius: 0.25rem;
+  border: 1px solid var(--color-secondary);
+  letter-spacing: 0.1em;
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.2);
+}
+[data-theme="luxury"] .btn-brand:hover {
+  box-shadow: 0 0 30px rgba(124, 58, 237, 0.4);
+}
+[data-theme="luxury"] .card-brand {
+  border: 1px solid rgba(212, 160, 23, 0.2);
+  border-radius: 0.5rem;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+[data-theme="luxury"] .heading-brand {
+  letter-spacing: 0.2em;
+  border-bottom: 1px solid var(--color-secondary);
+  padding-bottom: 0.5rem;
+}
+
+/* ============================================
+   Shared Utilities
+   ============================================ */
+.divider-gold {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-secondary, #d4a017), transparent);
+}

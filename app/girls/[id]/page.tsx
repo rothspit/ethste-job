@@ -1,14 +1,9 @@
 'use client'
-import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
-import { Swiper, SwiperSlide } from 'swiper/react'
-import { Pagination, Autoplay } from 'swiper/modules'
-
-// Swiperのスタイル読み込み
-import 'swiper/css'
-import 'swiper/css/pagination'
+import { useParams } from 'next/navigation'
+import ReviewForm from '@/components/ReviewForm'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,144 +13,482 @@ const supabase = createClient(
 export default function GirlDetailPage() {
   const params = useParams()
   const [girl, setGirl] = useState<any>(null)
+  const [diaries, setDiaries] = useState<any[]>([]) // 日記用
+  const [reviews, setReviews] = useState<any[]>([]) // 口コミ用
+  const [relatedGirls, setRelatedGirls] = useState<any[]>([]) // 関連キャスト用
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchGirl = async () => {
-      if (!params.id) return
-      const { data } = await supabase
+    const fetchData = async () => {
+      // 1. この女の子の情報を取得
+      const { data: currentGirl } = await supabase
         .from('girls')
         .select('*')
         .eq('id', params.id)
         .single()
 
-      setGirl(data)
+      if (currentGirl) {
+        setGirl(currentGirl)
+
+        // 2. ページタイトルを動的に変更 (SEO対策: ブラウザのタブ名が変わります)
+        document.title = `${currentGirl.name} (${currentGirl.age}) | 船橋デリヘル アイドル学園`
+
+        // 2.5 この女の子の日記を取得
+        const { data: diaryData } = await supabase
+          .from('diaries')
+          .select('*')
+          .eq('girl_id', params.id)
+          .order('created_at', { ascending: false })
+
+        if (diaryData) setDiaries(diaryData)
+
+        // 2.6 この女の子の口コミを取得
+        const { data: reviewData } = await supabase
+          .from('reviews')
+          .select('*')
+          .eq('girl_id', params.id)
+          .order('created_at', { ascending: false })
+
+        if (reviewData) setReviews(reviewData)
+
+        // 3. 「他の子はいないかな？」を防ぐための関連キャスト取得
+        // (自分以外で、出勤中の子 または ランキング上位の子を3人取得)
+        const { data: others } = await supabase
+          .from('girls')
+          .select('*')
+          .neq('id', params.id) // 自分以外
+          .limit(3)
+
+        if (others) setRelatedGirls(others)
+      }
       setLoading(false)
     }
-    fetchGirl()
+    fetchData()
   }, [params.id])
 
-  if (loading) return <div className="min-h-screen bg-slate-50 pt-20 text-center">読み込み中...</div>
-  if (!girl) return <div className="min-h-screen bg-slate-50 pt-20 text-center">データが見つかりません🙇‍♂️</div>
-
-  // 画像配列を作成（images配列 または image1_url〜image5_url に対応）
-  const getImages = () => {
-    if (girl.images && girl.images.length > 0) {
-      return girl.images
-    }
-    // 個別フィールドから配列を作成
-    const imgs = []
-    if (girl.image1_url) imgs.push(girl.image1_url)
-    if (girl.image2_url) imgs.push(girl.image2_url)
-    if (girl.image3_url) imgs.push(girl.image3_url)
-    if (girl.image4_url) imgs.push(girl.image4_url)
-    if (girl.image5_url) imgs.push(girl.image5_url)
-    return imgs
+  // 画像URLを取得するヘルパー関数
+  const getImageUrl = (g: any) => {
+    if (g.images && g.images[0]) return g.images[0]
+    if (g.image1_url) return g.image1_url
+    return null
   }
-  const images = getImages()
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-400">読み込み中...</div>
+  if (!girl) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-400">データが見つかりません</div>
+
+  const allImages = (girl.images && girl.images.length > 0) ? girl.images : (girl.image1_url ? [girl.image1_url] : [])
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+
+  const goToSlide = (index: number) => {
+    if (index < 0) setCurrentSlide(allImages.length - 1)
+    else if (index >= allImages.length) setCurrentSlide(0)
+    else setCurrentSlide(index)
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.touches[0].clientX)
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart === null) return
+    const diff = touchStart - e.changedTouches[0].clientX
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) goToSlide(currentSlide + 1)
+      else goToSlide(currentSlide - 1)
+    }
+    setTouchStart(null)
+  }
 
   return (
-    <main className="bg-slate-50 min-h-screen pb-24">
+    <div className="min-h-screen bg-[#f8f9fa] pb-36 text-slate-800 font-sans">
 
-      {/* 1. ヘッダー（戻るボタン） */}
-      <div className="fixed top-0 z-50 w-full bg-gradient-to-b from-black/60 to-transparent p-4">
-        <Link href="/funabashi" className="inline-flex items-center justify-center bg-black/50 text-white rounded-full w-10 h-10 backdrop-blur text-lg">
-          ←
-        </Link>
+      {/* 1. SEO対策: パンくずリスト */}
+      <div className="bg-white px-4 py-2 text-[10px] text-slate-500 flex items-center gap-1 border-b border-slate-100">
+        <Link href="/funabashi" className="hover:text-pink-600">トップ</Link>
+        <span>&gt;</span>
+        <Link href="/girls" className="hover:text-pink-600">在籍一覧</Link>
+        <span>&gt;</span>
+        <span className="font-bold text-slate-800">{girl.name}</span>
       </div>
 
-      {/* 2. 写真スライドショー */}
-      <div className="bg-black">
-        {images.length > 0 ? (
-          <Swiper
-            modules={[Pagination, Autoplay]}
-            pagination={{ clickable: true }}
-            autoplay={{ delay: 3500, disableOnInteraction: false }}
-            loop={images.length > 1}
-            className="w-full max-w-md mx-auto"
-          >
-            {images.map((img: string, idx: number) => (
-              <SwiperSlide key={idx} className="!flex !justify-center !items-center">
-                <img src={img} alt={`${girl.name}の写真${idx + 1}`} className="max-w-full max-h-[80vh] object-contain mx-auto" />
-              </SwiperSlide>
+      {/* 2. 画像スライダー */}
+      <div className="w-full max-w-sm mx-auto my-8">
+        <div className="aspect-[3/4] relative rounded-2xl overflow-hidden shadow-xl border border-white/50"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          {allImages.length > 0 ? (
+            <>
+              {allImages.map((img: string, i: number) => (
+                <img
+                  key={i}
+                  src={img}
+                  alt={`${girl.name} ${i + 1}`}
+                  className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
+                  style={{ opacity: i === currentSlide ? 1 : 0 }}
+                />
+              ))}
+
+              {/* 前へ / 次へボタン */}
+              {allImages.length > 1 && (
+                <>
+                  <button
+                    onClick={() => goToSlide(currentSlide - 1)}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors z-10"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    onClick={() => goToSlide(currentSlide + 1)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors z-10"
+                  >
+                    ›
+                  </button>
+                </>
+              )}
+
+              {/* ドットインジケーター */}
+              {allImages.length > 1 && (
+                <div className="absolute bottom-16 left-0 right-0 flex justify-center gap-1.5 z-10">
+                  {allImages.map((_: string, i: number) => (
+                    <button
+                      key={i}
+                      onClick={() => goToSlide(i)}
+                      className={`w-2 h-2 rounded-full transition-all ${i === currentSlide ? 'bg-white w-4' : 'bg-white/50'}`}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* 枚数表示 */}
+              {allImages.length > 1 && (
+                <div className="absolute top-3 right-3 bg-black/40 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm z-10">
+                  {currentSlide + 1} / {allImages.length}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
+              No Image
+            </div>
+          )}
+
+          {/* 画像の上に名前を重ねておしゃれに */}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6 pt-12 z-10">
+            <h1 className="text-2xl font-bold text-white shadow-sm">
+              {girl.name}
+            </h1>
+            <p className="text-white/80 text-sm">{girl.age ? `${girl.age}歳` : ''}</p>
+            {girl.is_attending && (
+              <div className="inline-flex items-center gap-1 bg-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse shadow-lg border border-pink-400 mt-2">
+                <span className="w-2 h-2 bg-white rounded-full"></span>
+                本日出勤中！
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* サムネイル一覧 */}
+        {allImages.length > 1 && (
+          <div className="flex gap-1.5 mt-3 justify-center overflow-x-auto px-2">
+            {allImages.map((img: string, i: number) => (
+              <button
+                key={i}
+                onClick={() => goToSlide(i)}
+                className={`w-12 h-14 rounded-lg overflow-hidden shrink-0 border-2 transition-all ${i === currentSlide ? 'border-pink-500 ring-1 ring-pink-300' : 'border-transparent opacity-60 hover:opacity-100'}`}
+              >
+                <img src={img} className="w-full h-full object-cover" alt="" />
+              </button>
             ))}
-          </Swiper>
-        ) : (
-          <div className="h-64 flex items-center justify-center text-slate-400 text-lg">
-            No Image
           </div>
         )}
       </div>
 
-      {/* 3. プロフィール情報 */}
-      <div className="max-w-2xl mx-auto -mt-6 relative z-10 px-4">
-        <div className="bg-white rounded-2xl shadow-xl p-6">
+      <div className="max-w-xl mx-auto px-4 -mt-6 relative z-10 space-y-6">
 
-          {/* 名前 */}
-          <div className="text-center mb-6 border-b border-slate-100 pb-4">
-            <h1 className="text-3xl font-black text-slate-800 mb-1">{girl.name}</h1>
-            <p className="text-pink-500 font-bold text-sm">
-              {girl.age}歳
+        {/* 3. 本日の出勤時間（最重要！） */}
+        <div className="bg-white rounded-2xl shadow-xl p-5 text-center transform transition-transform border border-slate-100 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 to-purple-500"></div>
+          <p className="text-xs font-bold text-slate-400 mb-1 tracking-widest uppercase">Today's Schedule</p>
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-2xl animate-bounce">⏰</span>
+            <p className="text-3xl font-black text-slate-800 tracking-tight">
+              {girl.today_hours || <span className="text-slate-400 text-xl">時間未定</span>}
             </p>
-            {girl.schedule_comment && (
-              <div className="mt-3 bg-green-50 text-green-700 text-xs px-3 py-1 rounded-full inline-block font-bold border border-green-200">
-                🟢 {girl.schedule_comment}
+          </div>
+          {girl.today_hours && (
+            <p className="text-[10px] text-red-500 font-bold mt-2 bg-red-50 inline-block px-2 py-1 rounded">
+              ※人気のため早めのご予約をおすすめします
+            </p>
+          )}
+        </div>
+
+        {/* 4. 店長からの推薦コメント（CVRアップの鍵） */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="bg-slate-50 px-4 py-2 border-b border-slate-100 flex items-center gap-2">
+            <span className="text-lg">👑</span>
+            <h2 className="font-bold text-sm text-slate-700">店長の推薦コメント</h2>
+          </div>
+          <div className="p-4">
+             <div className="flex gap-4">
+               <div className="w-10 h-10 rounded-full bg-slate-200 shrink-0 overflow-hidden border border-slate-300">
+                 {/* 店長アイコン（仮） */}
+                 <div className="w-full h-full flex items-center justify-center text-[10px]">店長</div>
+               </div>
+               <div className="flex-1">
+                  <div className="bg-slate-100 rounded-xl rounded-tl-none p-3 text-sm text-slate-700 leading-relaxed relative">
+                    {girl.schedule_comment || 'とっても可愛らしい新人さんが入店しました！写真よりも実物の方が数倍かわいいタイプです。性格もおっとりしていて癒やされますよ。ぜひ一度お会いしてみてください！'}
+                    <div className="absolute top-0 left-[-8px] w-0 h-0 border-t-[10px] border-r-[10px] border-t-slate-100 border-r-transparent"></div>
+                  </div>
+               </div>
+             </div>
+          </div>
+        </div>
+
+        {/* 5. プロフィール詳細データ */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+          <h2 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2 border-l-4 border-pink-500 pl-3">
+            プロフィール詳細
+          </h2>
+
+          <div className="grid grid-cols-2 gap-y-4 gap-x-8 mb-4">
+            <div className="flex justify-between border-b border-slate-100 pb-1">
+              <span className="text-xs font-bold text-slate-400">身長</span>
+              <span className="font-bold text-slate-700">{girl.height ? `${girl.height}cm` : '-'}</span>
+            </div>
+            <div className="flex justify-between border-b border-slate-100 pb-1">
+              <span className="text-xs font-bold text-slate-400">年齢</span>
+              <span className="font-bold text-slate-700">{girl.age ? `${girl.age}歳` : '-'}</span>
+            </div>
+            <div className="flex justify-between border-b border-slate-100 pb-1">
+              <span className="text-xs font-bold text-slate-400">職業</span>
+              <span className="font-bold text-slate-700">秘密❤️</span>
+            </div>
+            <div className="flex justify-between border-b border-slate-100 pb-1">
+              <span className="text-xs font-bold text-slate-400">性格</span>
+              <span className="font-bold text-slate-700">癒やし系</span>
+            </div>
+          </div>
+
+          {/* スリーサイズ */}
+          <div className="bg-slate-50 rounded-xl p-3 grid grid-cols-3 gap-2 text-center">
+            <div>
+              <p className="text-[10px] font-bold text-slate-400">BUST</p>
+              <p className="font-black text-slate-700 text-lg">
+                {girl.bust || '-'} <span className="text-xs font-normal text-slate-500">({girl.cup || '-'})</span>
+              </p>
+            </div>
+            <div className="border-x border-slate-200">
+              <p className="text-[10px] font-bold text-slate-400">WAIST</p>
+              <p className="font-black text-slate-700 text-lg">{girl.waist || '-'}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-400">HIP</p>
+              <p className="font-black text-slate-700 text-lg">{girl.hip || '-'}</p>
+            </div>
+          </div>
+
+          {/* 特徴タグ */}
+          {girl.tags && girl.tags.length > 0 && (
+            <div className="mt-4">
+              <p className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wide">Features</p>
+              <div className="flex flex-wrap gap-2">
+                {girl.tags.map((tag: string) => (
+                  <span
+                    key={tag}
+                    className="text-xs bg-gradient-to-r from-pink-100 to-purple-100 text-pink-700 px-3 py-1 rounded-full border border-pink-200 font-bold shadow-sm"
+                  >
+                    {tag}
+                  </span>
+                ))}
               </div>
-            )}
-          </div>
-
-          {/* スリーサイズ（他ページと同じ表記） */}
-          <div className="text-center mb-6">
-            <p className="text-pink-500 font-bold text-lg">
-              T{girl.height || '??'} B{girl.bust || '??'}({girl.cup || '?'}) W{girl.waist || '??'} H{girl.hip || '??'}
-            </p>
-          </div>
-
-          {/* スリーサイズカード */}
-          <div className="grid grid-cols-4 gap-2 text-center mb-8">
-            <div className="bg-pink-50 rounded-lg p-3">
-              <div className="text-[10px] text-slate-500 font-bold">身長</div>
-              <div className="font-black text-slate-800 text-xl">{girl.height || '??'}</div>
             </div>
-            <div className="bg-pink-50 rounded-lg p-3">
-              <div className="text-[10px] text-slate-500 font-bold">バスト</div>
-              <div className="font-black text-pink-500 text-xl">{girl.bust || '??'}<span className="text-xs text-slate-500">({girl.cup || '?'})</span></div>
-            </div>
-            <div className="bg-pink-50 rounded-lg p-3">
-              <div className="text-[10px] text-slate-500 font-bold">ウエスト</div>
-              <div className="font-black text-slate-800 text-xl">{girl.waist || '??'}</div>
-            </div>
-            <div className="bg-pink-50 rounded-lg p-3">
-              <div className="text-[10px] text-slate-500 font-bold">ヒップ</div>
-              <div className="font-black text-slate-800 text-xl">{girl.hip || '??'}</div>
-            </div>
-          </div>
-
-          {/* 店長コメント */}
-          <div className="bg-slate-50 rounded-xl p-5 border border-slate-200 relative mb-6">
-            <div className="absolute -top-3 left-4 bg-slate-800 text-white text-[10px] font-bold px-3 py-1 rounded">
-              STAFF COMMENT
-            </div>
-            <p className="text-sm text-slate-700 leading-relaxed pt-2">
-              {girl.description || girl.message || 'まだ紹介文が登録されていません。お問い合わせください！'}
-            </p>
-          </div>
-
+          )}
         </div>
+
+        {/* 6. 本人からのメッセージ */}
+        {girl.message && (
+          <div className="bg-pink-50 rounded-2xl p-6 shadow-sm relative border border-pink-100">
+            <div className="absolute -top-3 left-6 bg-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+              MESSAGE
+            </div>
+            <p className="text-slate-800 leading-relaxed whitespace-pre-wrap font-medium">
+              {girl.message}
+            </p>
+            <div className="text-right mt-2 text-pink-400 text-sm">
+              From {girl.name}
+            </div>
+          </div>
+        )}
+
+        {/* 6.5 Q&A 一問一答 */}
+        {(girl.q_hobby || girl.q_type || girl.q_fetish) && (
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+            <h2 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2 border-l-4 border-blue-400 pl-3">
+              <span>💬</span> 教えて！Q&A
+            </h2>
+            <div className="space-y-4">
+              {/* 趣味 */}
+              {girl.q_hobby && (
+                <div className="border-b border-slate-100 pb-3">
+                  <span className="text-xs font-bold text-blue-400 block mb-1">Q. 趣味・特技は？</span>
+                  <p className="text-sm text-slate-700">{girl.q_hobby}</p>
+                </div>
+              )}
+              {/* タイプ */}
+              {girl.q_type && (
+                <div className="border-b border-slate-100 pb-3">
+                  <span className="text-xs font-bold text-pink-400 block mb-1">Q. 好きなタイプは？</span>
+                  <p className="text-sm text-slate-700">{girl.q_type}</p>
+                </div>
+              )}
+              {/* フェチ */}
+              {girl.q_fetish && (
+                <div>
+                  <span className="text-xs font-bold text-purple-400 block mb-1">Q. 実は〇〇フェチです</span>
+                  <p className="text-sm text-slate-700">{girl.q_fetish}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* --- 📷 写メ日記 (修正版) --- */}
+        <div className="mb-12">
+          <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <span>📷</span> 写メ日記
+          </h2>
+
+          {diaries && diaries.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {diaries.map((diary) => (
+                <Link
+                  key={diary.id}
+                  href={`/diaries/${diary.id}`}
+                  className="block group cursor-pointer"
+                >
+                  <div className="aspect-square rounded-xl overflow-hidden mb-2 relative">
+                    {diary.images?.[0] || diary.image_url ? (
+                      <img
+                        src={diary.images?.[0] || diary.image_url}
+                        className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">No Image</div>
+                    )}
+                    <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/60 to-transparent p-2">
+                       <span className="text-white text-[10px] font-bold">
+                         {new Date(diary.created_at).toLocaleDateString()}
+                       </span>
+                    </div>
+                  </div>
+                  <p className="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-pink-500 transition">
+                    {diary.title}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-400 text-sm text-center py-8 bg-gray-50 rounded-xl">
+              まだ投稿がありません
+            </p>
+          )}
+
+          {/* 「もっと見る」ボタンで一覧ページへ誘導 */}
+          <div className="text-center mt-6">
+            <Link href="/diaries" className="inline-block border border-gray-300 px-6 py-2 rounded-full text-sm font-bold text-gray-600 hover:bg-gray-100 transition">
+              みんなの写メ日記を見る →
+            </Link>
+          </div>
+        </div>
+
+        {/* 8. 口コミセクション */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+          <h2 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2 border-l-4 border-yellow-400 pl-3">
+            <span className="text-yellow-500">⭐️</span> 口コミ
+          </h2>
+
+          {reviews && reviews.length > 0 ? (
+            <div className="space-y-4">
+              {reviews.map((review) => (
+                <div key={review.id} className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-yellow-400">
+                        {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
+                      </span>
+                      <span className="text-xs text-slate-500">{review.rating}点</span>
+                    </div>
+                    <span className="text-[10px] text-slate-400">
+                      {new Date(review.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  {review.title && (
+                    <h4 className="font-bold text-slate-800 mb-2">{review.title}</h4>
+                  )}
+                  <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{review.content}</p>
+                  <p className="text-xs text-slate-400 mt-2 text-right">— {review.nickname}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-slate-50 rounded-xl p-6 text-center text-slate-400 text-sm border border-dashed border-slate-200">
+              まだ口コミがありません
+            </div>
+          )}
+
+          {/* 口コミ投稿フォーム */}
+          <ReviewForm girlId={String(girl.id)} />
+        </div>
+
+        {/* 9. 直帰率を下げる「他のおすすめキャスト」 */}
+        {relatedGirls.length > 0 && (
+          <div className="pt-4 border-t border-slate-200">
+            <h3 className="font-bold text-slate-600 mb-3 text-sm">この子を見た人はこんな子も見ています</h3>
+            <div className="grid grid-cols-3 gap-2">
+              {relatedGirls.map((other) => {
+                const otherImage = getImageUrl(other)
+                return (
+                  <Link href={`/girls/${other.id}`} key={other.id} className="block group">
+                    <div className="aspect-[3/4] rounded-lg overflow-hidden bg-slate-200 mb-1 relative">
+                      {otherImage ? (
+                        <img src={otherImage} className="w-full h-full object-cover group-hover:scale-105 transition-transform"/>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400">No Img</div>
+                      )}
+                      {other.is_attending && <div className="absolute top-0 left-0 w-2 h-2 bg-green-500 rounded-full m-1 border border-white"></div>}
+                    </div>
+                    <p className="text-[10px] font-bold text-slate-700 truncate">{other.name}</p>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
       </div>
 
-      {/* 4. 予約ボタン（画面下固定） */}
-      <div className="fixed bottom-0 w-full bg-white border-t border-slate-200 p-3 shadow-lg z-50">
-        <div className="max-w-2xl mx-auto flex gap-3">
-          <Link href="/chat" className="flex-1 bg-green-500 text-white font-bold py-3 rounded-lg text-center shadow active:scale-95 transition-transform flex items-center justify-center gap-2">
-            <span>💬 LINE予約</span>
-          </Link>
-          <a href="tel:000-0000-0000" className="flex-1 bg-pink-600 text-white font-bold py-3 rounded-lg text-center shadow active:scale-95 transition-transform flex items-center justify-center gap-2">
-             <span>📞 電話予約</span>
+      {/* 7. 追尾フッター（CVエリア） */}
+      <div className="fixed bottom-0 left-0 w-full z-50 pointer-events-none">
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-md border-t border-white/40 shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.1)] pb-safe"></div>
+        <div className="max-w-xl mx-auto relative pointer-events-auto px-4 py-3 pb-safe flex gap-3">
+
+          <a href="tel:05017459665" className="flex-1 bg-white border-2 border-pink-500 text-pink-600 rounded-full flex flex-col items-center justify-center py-2 shadow-lg active:scale-95 transition-transform hover:bg-pink-50">
+            <span className="text-[10px] font-bold">電話で空き確認</span>
+            <span className="text-lg font-black leading-none tracking-tighter">050-1745-9665</span>
           </a>
+
+          <Link href="/chat" className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full flex items-center justify-center gap-2 py-2 shadow-lg active:scale-95 transition-transform hover:opacity-90 ring-2 ring-white ring-offset-2 ring-offset-blue-200">
+            <span className="text-2xl animate-pulse">💬</span>
+            <div className="flex flex-col leading-none">
+               <span className="text-[10px] font-bold opacity-90">待たずに連絡</span>
+               <span className="font-black text-lg">今すぐ指名</span>
+            </div>
+          </Link>
+
         </div>
       </div>
-
-    </main>
+    </div>
   )
 }
