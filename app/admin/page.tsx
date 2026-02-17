@@ -63,9 +63,18 @@ const TAG_CATEGORIES = [
   }
 ]
 
+const BRAND_OPTIONS = [
+  { slug: 'idol-gakuen', label: '🏫 アイドル学園' },
+  { slug: 'hitomitsu', label: '🍯 人妻の蜜' },
+]
+
 export default function AdminPage() {
   const [mode, setMode] = useState<'daily' | 'ranking' | 'chat' | 'diary' | 'diary_settings'>('daily')
   const [girls, setGirls] = useState<any[]>([])
+
+  // ブランド切り替え用
+  const [currentBrandSlug, setCurrentBrandSlug] = useState('idol-gakuen')
+  const [currentBrandId, setCurrentBrandId] = useState<string | null>(null)
 
   // チャット用
   const [sessions, setSessions] = useState<any[]>([])
@@ -102,12 +111,25 @@ export default function AdminPage() {
   const [diaryVideo, setDiaryVideo] = useState<File | null>(null)
 
   useEffect(() => {
-    fetchGirls()
     fetchChatSessions()
     fetchDiaries()
     const interval = setInterval(() => { fetchChatSessions() }, 5000)
     return () => clearInterval(interval)
   }, [])
+
+  // ブランドID解決
+  useEffect(() => {
+    const resolve = async () => {
+      const { data } = await supabase.from('brands').select('id').eq('slug', currentBrandSlug).single()
+      if (data) setCurrentBrandId(data.id)
+    }
+    resolve()
+  }, [currentBrandSlug])
+
+  // ブランド変更時にキャスト再取得
+  useEffect(() => {
+    if (currentBrandId) fetchGirls()
+  }, [currentBrandId])
 
   // --- 時間生成ヘルパー（翌朝まで対応） ---
   const timeOptions = []
@@ -128,7 +150,9 @@ export default function AdminPage() {
 
   // --- データ取得 ---
   const fetchGirls = async () => {
-    const { data } = await supabase.from('girls').select('*').order('ranking_order', { ascending: true })
+    let query = supabase.from('girls').select('*').order('ranking_order', { ascending: true })
+    if (currentBrandId) query = query.eq('brand_id', currentBrandId)
+    const { data } = await query
     if (data) setGirls(data)
   }
 
@@ -313,7 +337,7 @@ export default function AdminPage() {
       }
 
       if (editingGirl) await supabase.from('girls').update(saveData).eq('id', editingGirl.id)
-      else await supabase.from('girls').insert([saveData])
+      else await supabase.from('girls').insert([{ ...saveData, brand_id: currentBrandId }])
 
       alert('保存しました'); setIsModalOpen(false); fetchGirls()
     } catch (err: any) { alert(err.message) } finally { setUploading(false) }
@@ -327,6 +351,25 @@ export default function AdminPage() {
       </header>
 
       <div className="max-w-6xl mx-auto p-2 md:p-4">
+        {/* ブランド切り替え */}
+        <div className="flex bg-white rounded-xl shadow mb-3 overflow-hidden">
+          {BRAND_OPTIONS.map((b) => (
+            <button
+              key={b.slug}
+              onClick={() => setCurrentBrandSlug(b.slug)}
+              className={`flex-1 py-3 font-bold text-sm transition-colors ${
+                currentBrandSlug === b.slug
+                  ? b.slug === 'idol-gakuen'
+                    ? 'bg-pink-600 text-white'
+                    : 'bg-gradient-to-r from-purple-800 to-amber-600 text-white'
+                  : 'text-slate-400 hover:bg-slate-50'
+              }`}
+            >
+              {b.label}
+            </button>
+          ))}
+        </div>
+
         {/* タブ */}
         <div className="flex bg-white rounded-xl shadow mb-6 overflow-hidden flex-wrap">
           <button onClick={() => setMode('daily')} className={`flex-1 py-3 font-bold px-2 text-xs md:text-base ${mode === 'daily' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`}>📅 管理</button>

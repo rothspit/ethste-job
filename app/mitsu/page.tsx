@@ -151,7 +151,7 @@ export default async function MitsuPage() {
       {/* ===== Hero ===== */}
       <section className="py-20 px-4 text-center">
         <p className="text-[#b8860b] text-[10px] tracking-[0.5em] mb-8 uppercase">
-          Premium Delivery Health
+          Delivery Health
         </p>
         <h2
           className="text-3xl md:text-4xl font-medium tracking-[0.3em] text-[#1c1917] mb-6"
