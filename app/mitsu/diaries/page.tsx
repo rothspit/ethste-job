@@ -4,8 +4,11 @@ import { getBrand } from '@/lib/brand/get-brand'
 import { getDiariesByBrand } from '@/lib/brand/brand-queries'
 import type { Diary } from '@/lib/brand/brand-queries'
 
+const SLUG = 'hitomitsu'
+const serif = "var(--font-noto-serif), 'Noto Serif JP', serif"
+
 export async function generateMetadata(): Promise<Metadata> {
-  const brand = await getBrand()
+  const brand = await getBrand(SLUG)
   return {
     title: `写メ日記｜${brand.name}`,
     description: `${brand.name}のキャストによる写メ日記一覧。`,
@@ -25,9 +28,9 @@ function DiaryCard({ diary }: { diary: Diary }) {
   return (
     <Link
       href={`/mitsu/diaries/${diary.slug}`}
-      className="bg-[#1a1225] rounded-lg overflow-hidden border border-[#d4a017]/10 hover:border-[#d4a017]/30 transition group"
+      className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition group"
     >
-      <div className="aspect-video bg-[#2d1b4e] flex items-center justify-center overflow-hidden">
+      <div className="aspect-video bg-[#f5f5f4] flex items-center justify-center overflow-hidden">
         {diary.thumbnail_url ? (
           <img
             src={diary.thumbnail_url}
@@ -35,16 +38,14 @@ function DiaryCard({ diary }: { diary: Diary }) {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <span className="text-3xl opacity-20">📝</span>
+          <span className="text-3xl opacity-10">📝</span>
         )}
       </div>
       <div className="p-3">
-        <p className="text-sm font-bold text-[#f5f3ff] line-clamp-2">{diary.title}</p>
+        <p className="text-sm font-medium text-[#1c1917] line-clamp-2">{diary.title}</p>
         <div className="flex items-center justify-between mt-2">
-          {girlName && (
-            <p className="text-[10px] text-[#d4a017]">{girlName}</p>
-          )}
-          <p className="text-[10px] text-[#a1a1aa]/50 ml-auto">{date}</p>
+          {girlName && <p className="text-[10px] text-[#b8860b]">{girlName}</p>}
+          <p className="text-[10px] text-[#78716c] ml-auto">{date}</p>
         </div>
       </div>
     </Link>
@@ -53,41 +54,36 @@ function DiaryCard({ diary }: { diary: Diary }) {
 
 export default async function MitsuDiariesPage() {
   const [brand, diaries] = await Promise.all([
-    getBrand(),
-    getDiariesByBrand(),
+    getBrand(SLUG),
+    getDiariesByBrand({ forceSlug: SLUG }),
   ])
 
   return (
-    <main className="min-h-screen bg-[#0f0a1a] text-[#f5f3ff] pb-24">
+    <main className="min-h-screen bg-[#fafaf9] text-[#1c1917] pb-20">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#0f0a1a]/95 backdrop-blur border-b border-[#d4a017]/20">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-4">
-          <Link href="/mitsu" className="text-[#a1a1aa] text-sm hover:text-[#f5f3ff] transition">
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-[#b8860b]/30">
+        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
+          <Link href="/mitsu" className="text-[#78716c] text-xs tracking-wider hover:text-[#b8860b] transition">
             ← 戻る
           </Link>
-          <h1
-            className="text-lg font-bold tracking-[0.1em]"
-            style={{ fontFamily: "var(--font-noto-serif), 'Noto Serif JP', serif" }}
-          >
+          <h1 className="text-base text-[#1c1917] tracking-[0.2em] font-medium" style={{ fontFamily: serif }}>
             写メ日記
           </h1>
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <p className="text-center text-[#a1a1aa]/50 text-xs tracking-wider mb-8">
-          {brand.name}
-        </p>
+      <div className="max-w-2xl mx-auto px-4 py-12">
+        <p className="text-center text-[#a8a29e] text-xs tracking-wider mb-10">{brand.name}</p>
 
         {diaries.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             {diaries.map((d) => (
               <DiaryCard key={d.id} diary={d} />
             ))}
           </div>
         ) : (
           <div className="text-center py-20">
-            <p className="text-[#a1a1aa]/40 text-sm">準備中</p>
+            <p className="text-[#a8a29e] text-sm">準備中</p>
           </div>
         )}
       </div>

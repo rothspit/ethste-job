@@ -79,7 +79,10 @@ const DEFAULT_SLUG: BrandSlug = 'idol-gakuen'
 // getBrandSlug — ヘッダーからスラッグを取得（軽量版）
 // ============================================
 
-export async function getBrandSlug(): Promise<BrandSlug> {
+export async function getBrandSlug(forceSlug?: string): Promise<BrandSlug> {
+  if (forceSlug === 'idol-gakuen' || forceSlug === 'hitomitsu') {
+    return forceSlug
+  }
   const h = await headers()
   const slug = h.get('x-brand-slug')
   if (slug === 'idol-gakuen' || slug === 'hitomitsu') {
@@ -92,8 +95,8 @@ export async function getBrandSlug(): Promise<BrandSlug> {
 // getBrand — Supabase から Brand を取得
 // ============================================
 
-export async function getBrand(): Promise<Brand> {
-  const slug = await getBrandSlug()
+export async function getBrand(forceSlug?: string): Promise<Brand> {
+  const slug = await getBrandSlug(forceSlug)
 
   try {
     const { data, error } = await supabase

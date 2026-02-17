@@ -3,11 +3,14 @@ import type { Metadata } from 'next'
 import { getBrand } from '@/lib/brand/get-brand'
 import { getGirlById } from '@/lib/brand/brand-queries'
 
+const SLUG = 'hitomitsu'
+const serif = "var(--font-noto-serif), 'Noto Serif JP', serif"
+
 type Props = { params: Promise<{ id: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
-  const [brand, girl] = await Promise.all([getBrand(), getGirlById(id)])
+  const [brand, girl] = await Promise.all([getBrand(SLUG), getGirlById(id, SLUG)])
   if (!girl) return { title: `キャスト不明｜${brand.name}` }
   return {
     title: `${girl.name}｜${brand.name}`,
@@ -17,15 +20,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function MitsuGirlDetailPage({ params }: Props) {
   const { id } = await params
-  const [brand, girl] = await Promise.all([getBrand(), getGirlById(id)])
+  const [brand, girl] = await Promise.all([getBrand(SLUG), getGirlById(id, SLUG)])
 
   if (!girl) {
     return (
-      <main className="min-h-screen bg-[#0f0a1a] text-[#f5f3ff] flex flex-col items-center justify-center p-4">
-        <p className="text-[#a1a1aa] text-lg mb-4">キャストが見つかりません</p>
+      <main className="min-h-screen bg-white text-[#1c1917] flex flex-col items-center justify-center p-4">
+        <p className="text-[#78716c] text-base mb-6">キャストが見つかりません</p>
         <Link
           href="/mitsu/girls"
-          className="border border-[#d4a017]/30 text-[#d4a017] text-sm px-6 py-2.5 tracking-wider hover:bg-[#d4a017]/10 transition"
+          className="border border-[#b8860b]/30 text-[#b8860b] text-xs px-6 py-2.5 tracking-wider hover:bg-[#b8860b]/5 transition"
         >
           一覧に戻る
         </Link>
@@ -37,17 +40,14 @@ export default async function MitsuGirlDetailPage({ params }: Props) {
   const extra = girl as any
 
   return (
-    <main className="min-h-screen bg-[#0f0a1a] text-[#f5f3ff] pb-24">
+    <main className="min-h-screen bg-white text-[#1c1917] pb-20">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#0f0a1a]/95 backdrop-blur border-b border-[#d4a017]/20">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-4">
-          <Link href="/mitsu/girls" className="text-[#a1a1aa] text-sm hover:text-[#f5f3ff] transition">
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-[#b8860b]/30">
+        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
+          <Link href="/mitsu/girls" className="text-[#78716c] text-xs tracking-wider hover:text-[#b8860b] transition">
             ← 一覧
           </Link>
-          <h1
-            className="text-lg font-bold tracking-[0.1em]"
-            style={{ fontFamily: "var(--font-noto-serif), 'Noto Serif JP', serif" }}
-          >
+          <h1 className="text-base text-[#1c1917] tracking-[0.2em] font-medium" style={{ fontFamily: serif }}>
             {girl.name}
           </h1>
         </div>
@@ -55,46 +55,46 @@ export default async function MitsuGirlDetailPage({ params }: Props) {
 
       <div className="max-w-lg mx-auto">
         {/* Photo */}
-        <div className="aspect-[3/4] bg-[#2d1b4e] flex items-center justify-center overflow-hidden">
+        <div className="aspect-[3/4] bg-[#f5f5f4] flex items-center justify-center overflow-hidden">
           {imageUrl ? (
             <img src={imageUrl} alt={girl.name} className="w-full h-full object-cover" />
           ) : (
-            <span className="text-8xl opacity-20">👤</span>
+            <span className="text-8xl opacity-10">👤</span>
           )}
         </div>
 
         {/* Profile */}
-        <div className="px-4 py-6">
+        <div className="px-5 py-10">
           <h2
-            className="text-2xl font-bold tracking-wider mb-1"
-            style={{ fontFamily: "var(--font-noto-serif), 'Noto Serif JP', serif" }}
+            className="text-2xl font-medium tracking-[0.2em] text-[#1c1917] mb-1"
+            style={{ fontFamily: serif }}
           >
             {girl.name}
           </h2>
           {girl.catchphrase && (
-            <p className="text-[#d4a017] text-sm mt-1">{girl.catchphrase}</p>
+            <p className="text-[#b8860b] text-sm mt-2 tracking-wider">{girl.catchphrase}</p>
           )}
 
-          <div className="divider-gold my-6" />
+          <div className="w-10 h-px bg-[#b8860b] my-8" />
 
           {/* Stats */}
           <div className="grid grid-cols-2 gap-3 text-sm">
             {girl.age && (
-              <div className="bg-[#1a1225] rounded-lg p-3 border border-[#d4a017]/10">
-                <p className="text-[10px] text-[#a1a1aa]/60 mb-1">年齢</p>
-                <p className="font-bold">{girl.age}歳</p>
+              <div className="bg-[#fafaf9] rounded-lg p-4">
+                <p className="text-[10px] text-[#a8a29e] mb-1 tracking-wider">年齢</p>
+                <p className="font-medium" style={{ fontFamily: serif }}>{girl.age}歳</p>
               </div>
             )}
             {extra.height && (
-              <div className="bg-[#1a1225] rounded-lg p-3 border border-[#d4a017]/10">
-                <p className="text-[10px] text-[#a1a1aa]/60 mb-1">身長</p>
-                <p className="font-bold">{extra.height}cm</p>
+              <div className="bg-[#fafaf9] rounded-lg p-4">
+                <p className="text-[10px] text-[#a8a29e] mb-1 tracking-wider">身長</p>
+                <p className="font-medium" style={{ fontFamily: serif }}>{extra.height}cm</p>
               </div>
             )}
             {(extra.bust || extra.waist || extra.hip) && (
-              <div className="bg-[#1a1225] rounded-lg p-3 border border-[#d4a017]/10 col-span-2">
-                <p className="text-[10px] text-[#a1a1aa]/60 mb-1">スリーサイズ</p>
-                <p className="font-bold">
+              <div className="bg-[#fafaf9] rounded-lg p-4 col-span-2">
+                <p className="text-[10px] text-[#a8a29e] mb-1 tracking-wider">スリーサイズ</p>
+                <p className="font-medium" style={{ fontFamily: serif }}>
                   B{extra.bust || '?'} / W{extra.waist || '?'} / H{extra.hip || '?'}
                 </p>
               </div>
@@ -104,37 +104,33 @@ export default async function MitsuGirlDetailPage({ params }: Props) {
           {/* Bio */}
           {extra.bio && (
             <>
-              <div className="divider-gold my-6" />
-              <div>
-                <h3
-                  className="text-sm tracking-[0.2em] text-[#a1a1aa] mb-3"
-                  style={{ fontFamily: "var(--font-noto-serif), 'Noto Serif JP', serif" }}
-                >
-                  自己紹介
-                </h3>
-                <p className="text-sm text-[#a1a1aa]/80 leading-relaxed whitespace-pre-line">
-                  {extra.bio}
-                </p>
-              </div>
+              <div className="w-10 h-px bg-[#b8860b]/30 my-8" />
+              <h3
+                className="text-xs tracking-[0.2em] text-[#78716c] mb-4"
+                style={{ fontFamily: serif }}
+              >
+                自己紹介
+              </h3>
+              <p className="text-sm text-[#44403c] leading-loose whitespace-pre-line">
+                {extra.bio}
+              </p>
             </>
           )}
 
           {/* Manager Comment */}
           {extra.manager_comment && (
             <>
-              <div className="divider-gold my-6" />
-              <div>
-                <h3
-                  className="text-sm tracking-[0.2em] text-[#a1a1aa] mb-3"
-                  style={{ fontFamily: "var(--font-noto-serif), 'Noto Serif JP', serif" }}
-                >
-                  店長コメント
-                </h3>
-                <div className="bg-[#1a1225] rounded-lg p-4 border border-[#d4a017]/10">
-                  <p className="text-sm text-[#a1a1aa]/80 leading-relaxed whitespace-pre-line">
-                    {extra.manager_comment}
-                  </p>
-                </div>
+              <div className="w-10 h-px bg-[#b8860b]/30 my-8" />
+              <h3
+                className="text-xs tracking-[0.2em] text-[#78716c] mb-4"
+                style={{ fontFamily: serif }}
+              >
+                店長コメント
+              </h3>
+              <div className="bg-[#fafaf9] rounded-lg p-5">
+                <p className="text-sm text-[#44403c] leading-loose whitespace-pre-line">
+                  {extra.manager_comment}
+                </p>
               </div>
             </>
           )}
@@ -142,11 +138,11 @@ export default async function MitsuGirlDetailPage({ params }: Props) {
           {/* Phone CTA */}
           {brand.phone && (
             <>
-              <div className="divider-gold my-6" />
+              <div className="w-10 h-px bg-[#b8860b]/30 my-8" />
               <a
                 href={`tel:${brand.phone}`}
-                className="block text-center border border-[#d4a017] text-[#d4a017] py-4 tracking-[0.15em] font-bold hover:bg-[#d4a017]/10 transition"
-                style={{ fontFamily: "var(--font-noto-serif), 'Noto Serif JP', serif" }}
+                className="block text-center border border-[#b8860b]/40 text-[#b8860b] py-4 tracking-[0.2em] font-medium hover:bg-[#b8860b]/5 transition"
+                style={{ fontFamily: serif }}
               >
                 ☎ {girl.name}を予約する
               </a>

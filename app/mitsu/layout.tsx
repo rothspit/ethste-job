@@ -4,6 +4,8 @@ import { getBrand } from '@/lib/brand/get-brand'
 import { BrandProvider } from '@/lib/brand/brand-context'
 import { ThemeInjector } from '@/components/brand/theme-injector'
 
+const SLUG = 'hitomitsu'
+
 const notoSerif = Noto_Serif_JP({
   weight: ['400', '500', '700'],
   subsets: ['latin'],
@@ -19,7 +21,7 @@ const notoSans = Noto_Sans_JP({
 })
 
 export async function generateMetadata(): Promise<Metadata> {
-  const brand = await getBrand()
+  const brand = await getBrand(SLUG)
   return {
     title: brand.site_title || `${brand.name}｜${brand.area || ''}`,
     description: brand.description || brand.site_tagline || '',
@@ -38,7 +40,7 @@ export default async function MitsuLayout({
 }: {
   children: React.ReactNode
 }) {
-  const brand = await getBrand()
+  const brand = await getBrand(SLUG)
 
   return (
     <div

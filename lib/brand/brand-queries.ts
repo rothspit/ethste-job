@@ -56,8 +56,9 @@ export interface Diary {
 export async function getGirlsByBrand(opts?: {
   limit?: number
   status?: string
+  forceSlug?: string
 }): Promise<Girl[]> {
-  const brand = await getBrand()
+  const brand = await getBrand(opts?.forceSlug)
   let query = supabase
     .from('girls')
     .select('*')
@@ -80,8 +81,8 @@ export async function getGirlsByBrand(opts?: {
   return (data ?? []) as Girl[]
 }
 
-export async function getGirlById(id: string): Promise<Girl | null> {
-  const brand = await getBrand()
+export async function getGirlById(id: string, forceSlug?: string): Promise<Girl | null> {
+  const brand = await getBrand(forceSlug)
   const { data, error } = await supabase
     .from('girls')
     .select('*')
@@ -100,8 +101,8 @@ export async function getGirlById(id: string): Promise<Girl | null> {
 // Schedules
 // ============================================
 
-export async function getTodaySchedule(): Promise<Schedule[]> {
-  const brand = await getBrand()
+export async function getTodaySchedule(forceSlug?: string): Promise<Schedule[]> {
+  const brand = await getBrand(forceSlug)
   const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
 
   const { data, error } = await supabase
@@ -125,8 +126,9 @@ export async function getTodaySchedule(): Promise<Schedule[]> {
 export async function getDiariesByBrand(opts?: {
   limit?: number
   category?: string
+  forceSlug?: string
 }): Promise<Diary[]> {
-  const brand = await getBrand()
+  const brand = await getBrand(opts?.forceSlug)
   let query = supabase
     .from('diaries')
     .select('*, girl:girls(id, name, profile_image_url)')
@@ -149,8 +151,8 @@ export async function getDiariesByBrand(opts?: {
   return (data ?? []) as Diary[]
 }
 
-export async function getDiaryBySlug(slug: string): Promise<Diary | null> {
-  const brand = await getBrand()
+export async function getDiaryBySlug(slug: string, forceSlug?: string): Promise<Diary | null> {
+  const brand = await getBrand(forceSlug)
   const { data, error } = await supabase
     .from('diaries')
     .select('*, girl:girls(id, name, profile_image_url)')
