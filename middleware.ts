@@ -27,6 +27,11 @@ const DEFAULT_BRAND: BrandEntry = { slug: 'idol-gakuen', style: 'pop' }
 // ============================================
 // ブランド判定
 // ============================================
+function getHostname(req: NextRequest): string {
+  // Vercel等のリバースプロキシ環境では x-forwarded-host に実際のドメインが入る
+  return req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? ''
+}
+
 function resolveBrand(req: NextRequest): BrandEntry {
   // クエリパラメータ優先（開発用）
   const brandParam = req.nextUrl.searchParams.get('brand')
@@ -36,7 +41,7 @@ function resolveBrand(req: NextRequest): BrandEntry {
   }
 
   // ホスト名で判定
-  const host = req.headers.get('host') ?? ''
+  const host = getHostname(req)
   return BRAND_MAP[host] ?? DEFAULT_BRAND
 }
 
@@ -92,7 +97,7 @@ function resolveRewrite(
   brand: BrandEntry,
 ): URL | null {
   const { pathname } = req.nextUrl
-  const host = req.headers.get('host') ?? ''
+  const host = getHostname(req)
   const isPortal = host.startsWith('localhost') && !BRAND_MAP[host]
 
   // ポータル（localhost:3000等）→ リライトなし

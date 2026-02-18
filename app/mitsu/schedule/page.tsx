@@ -10,8 +10,22 @@ const serif = "var(--font-noto-serif), 'Noto Serif JP', serif"
 export async function generateMetadata(): Promise<Metadata> {
   const brand = await getBrand(SLUG)
   return {
-    title: `本日の出勤｜${brand.name}`,
-    description: `${brand.name}の本日の出勤スケジュール。`,
+    title: '本日の出勤 | 人妻の蜜 西船橋・錦糸町・葛西',
+    description: '西船橋・錦糸町・葛西エリアの人妻デリヘル「人妻の蜜」の本日の出勤スケジュール。今すぐ遊べるキャストを確認できます。',
+    keywords: ['出勤', '人妻', 'デリヘル', '西船橋', '錦糸町', '葛西', '本日'],
+    alternates: {
+      canonical: 'https://h-mitsu.com/mitsu/schedule',
+    },
+    openGraph: {
+      title: '本日の出勤 | 人妻の蜜 西船橋・錦糸町・葛西',
+      description: '西船橋・錦糸町・葛西エリアの人妻デリヘル「人妻の蜜」の本日の出勤スケジュール。',
+      images: [{ url: '/main_mitsu.jpg', width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: '本日の出勤 | 人妻の蜜 西船橋・錦糸町・葛西',
+      images: ['/main_mitsu.jpg'],
+    },
   }
 }
 

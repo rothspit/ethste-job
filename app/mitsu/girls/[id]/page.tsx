@@ -12,9 +12,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
   const [brand, girl] = await Promise.all([getBrand(SLUG), getGirlById(id, SLUG)])
   if (!girl) return { title: `キャスト不明｜${brand.name}` }
+  const imageUrl = girl.profile_image_url ?? (girl as any)?.image1_url ?? '/main_mitsu.jpg'
+  const extra = girl as any
+  const ageText = girl.age ? `${girl.age}歳` : ''
+  const cupText = extra.cup ? ` / ${extra.cup}カップ` : ''
+  const titleText = `${girl.name} (${ageText}) | 西船橋・錦糸町の人妻デリヘル`
+  const descText = `西船橋・錦糸町エリアに出勤中！${girl.name}(${ageText}${cupText})。人妻の蜜おすすめの熟女キャストです。`
   return {
-    title: `${girl.name}｜${brand.name}`,
-    description: girl.catchphrase || `${brand.name}の${girl.name}のプロフィール`,
+    title: titleText,
+    description: descText,
+    keywords: ['デリヘル', '人妻', '西船橋', '錦糸町', '指名', girl.name],
+    alternates: {
+      canonical: `https://h-mitsu.com/mitsu/girls/${id}`,
+    },
+    openGraph: {
+      title: titleText,
+      description: descText,
+      type: 'profile',
+      images: [{ url: imageUrl, width: 600, height: 800 }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: titleText,
+      images: [imageUrl],
+    },
   }
 }
 

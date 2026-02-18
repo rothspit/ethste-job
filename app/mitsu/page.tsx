@@ -126,8 +126,29 @@ export default async function MitsuPage() {
     getGirlsByBrand({ limit: 12, forceSlug: SLUG }),
   ])
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: '人妻の蜜',
+    description: brand.description || brand.site_tagline || '大人の甘い誘惑…',
+    url: 'https://h-mitsu.com',
+    telephone: brand.phone || undefined,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: '船橋市',
+      addressRegion: '千葉県',
+      addressCountry: 'JP',
+    },
+    areaServed: ['西船橋', '葛西', '錦糸町'],
+    openingHours: 'Mo-Su 10:00-28:00',
+  }
+
   return (
     <main className="min-h-screen bg-white text-[#1c1917] pb-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* ===== Header ===== */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-[#b8860b]/30">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">

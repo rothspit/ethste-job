@@ -126,9 +126,12 @@ export default function AdminPage() {
     resolve()
   }, [currentBrandSlug])
 
-  // ブランド変更時にキャスト再取得
+  // ブランド変更時にキャスト・日記を再取得
   useEffect(() => {
-    if (currentBrandId) fetchGirls()
+    if (currentBrandId) {
+      fetchGirls()
+      fetchDiaries()
+    }
   }, [currentBrandId])
 
   // --- 時間生成ヘルパー（翌朝まで対応） ---
@@ -157,7 +160,9 @@ export default function AdminPage() {
   }
 
   const fetchDiaries = async () => {
-    const { data } = await supabase.from('diaries').select('*, girls(name, images)').order('created_at', { ascending: false })
+    let query = supabase.from('diaries').select('*, girls(name, images)').order('created_at', { ascending: false })
+    if (currentBrandId) query = query.eq('brand_id', currentBrandId)
+    const { data } = await query
     if (data) setDiaries(data)
   }
 
@@ -221,7 +226,8 @@ export default function AdminPage() {
         title: diaryForm.title,
         content: diaryForm.content,
         images: imageUrls,
-        videos: videoUrls
+        videos: videoUrls,
+        brand_id: currentBrandId
       }])
 
       alert('投稿完了')

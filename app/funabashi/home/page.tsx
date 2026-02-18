@@ -45,7 +45,7 @@ export default function HomeContentPage() {
       </div>
 
       {/* 写メ日記セクション */}
-      <DiarySection />
+      <DiarySection brandSlug="idol-gakuen" />
 
       {/* 在籍一覧ボタン */}
       <div className="max-w-2xl mx-auto px-4 mb-6">

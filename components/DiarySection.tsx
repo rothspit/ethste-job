@@ -8,22 +8,32 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-export default function DiarySection() {
+export default function DiarySection({ brandSlug }: { brandSlug?: string }) {
   const [diaries, setDiaries] = useState<any[]>([])
 
   useEffect(() => {
     const fetchDiaries = async () => {
+      // brandSlug が指定されていたらブランドIDを取得してフィルタ
+      let brandId: string | null = null
+      if (brandSlug) {
+        const { data: brand } = await supabase.from('brands').select('id').eq('slug', brandSlug).single()
+        if (brand) brandId = brand.id
+      }
+
       // 最新10件を取得（書いた子の名前とアイコン画像も一緒に取ってくる）
-      const { data } = await supabase
+      let query = supabase
         .from('diaries')
         .select('*, girls(name, images)')
         .order('created_at', { ascending: false })
         .limit(10)
 
+      if (brandId) query = query.eq('brand_id', brandId)
+
+      const { data } = await query
       if (data) setDiaries(data)
     }
     fetchDiaries()
-  }, [])
+  }, [brandSlug])
 
   // 日記がまだなければ何も表示しない
   if (diaries.length === 0) return null

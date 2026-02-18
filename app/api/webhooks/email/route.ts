@@ -73,7 +73,7 @@ export async function POST(request: Request) {
       // 送信元の女の子を特定
       const { data: girl } = await supabase
         .from('girls')
-        .select('id')
+        .select('id, brand_id')
         .eq('post_email', from)
         .single()
 
@@ -111,6 +111,7 @@ export async function POST(request: Request) {
         .from('diaries')
         .insert({
           girl_id: girl.id,
+          brand_id: girl.brand_id,
           title: subject,
           content: text,
           images: imageUrls,

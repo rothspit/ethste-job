@@ -12,15 +12,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const [brand, diary] = await Promise.all([getBrand(SLUG), getDiaryBySlug(slug, SLUG)])
   if (!diary) return { title: `記事が見つかりません｜${brand.name}` }
+  const ogImage = diary.thumbnail_url || '/main_mitsu.jpg'
+  const descText = diary.content?.slice(0, 120) || '西船橋・錦糸町の人妻デリヘル「人妻の蜜」キャストの写メ日記。'
   return {
-    title: `${diary.title}｜${brand.name}`,
-    description: diary.content?.slice(0, 120) || '',
+    title: `${diary.title} | 人妻の蜜 写メ日記`,
+    description: descText,
+    keywords: ['写メ日記', '人妻', '西船橋', '錦糸町', 'デリヘル'],
+    alternates: {
+      canonical: `https://h-mitsu.com/mitsu/diaries/${slug}`,
+    },
     openGraph: {
-      title: diary.title,
-      description: diary.content?.slice(0, 120) || '',
-      ...(diary.thumbnail_url && {
-        images: [{ url: diary.thumbnail_url, width: 1200, height: 630 }],
-      }),
+      title: `${diary.title} | 人妻の蜜 写メ日記`,
+      description: descText,
+      type: 'article',
+      publishedTime: diary.published_at || undefined,
+      images: [{ url: ogImage, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${diary.title} | 人妻の蜜 写メ日記`,
+      images: [ogImage],
     },
   }
 }

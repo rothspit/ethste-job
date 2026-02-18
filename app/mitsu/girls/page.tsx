@@ -10,8 +10,22 @@ const serif = "var(--font-noto-serif), 'Noto Serif JP', serif"
 export async function generateMetadata(): Promise<Metadata> {
   const brand = await getBrand(SLUG)
   return {
-    title: `在籍キャスト｜${brand.name}`,
-    description: `${brand.name}の在籍キャスト一覧。${brand.area || ''}`,
+    title: '在籍キャスト | 人妻の蜜 西船橋・錦糸町・葛西の熟女デリヘル',
+    description: '西船橋・錦糸町・葛西エリアの人妻・熟女専門デリヘル「人妻の蜜」の在籍キャスト一覧。30代〜50代の魅力的な大人の女性が多数在籍。',
+    keywords: ['デリヘル', '人妻', '熟女', '西船橋', '錦糸町', '葛西', '在籍', 'キャスト'],
+    alternates: {
+      canonical: 'https://h-mitsu.com/mitsu/girls',
+    },
+    openGraph: {
+      title: '在籍キャスト | 人妻の蜜 西船橋・錦糸町・葛西の熟女デリヘル',
+      description: '西船橋・錦糸町・葛西エリアの人妻・熟女専門デリヘル「人妻の蜜」の在籍キャスト一覧。',
+      images: [{ url: '/main_mitsu.jpg', width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: '在籍キャスト | 人妻の蜜 西船橋・錦糸町・葛西の熟女デリヘル',
+      images: ['/main_mitsu.jpg'],
+    },
   }
 }
 

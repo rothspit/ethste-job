@@ -127,6 +127,7 @@ export default function FunabashiPage() {
 
   // 実際のキャストデータ
   const [realCasts, setRealCasts] = useState<any[]>([])
+  const [brandId, setBrandId] = useState<string | null>(null)
 
   // 学級委員長（管理画面で設定）の設定
   interface LeaderConfig {
@@ -151,11 +152,22 @@ export default function FunabashiPage() {
       setLeaderConfig(config)
     }
 
-    // キャストデータを取得
+    // ブランドIDを取得
+    const fetchBrand = async () => {
+      const { data } = await supabase.from('brands').select('id').eq('slug', 'idol-gakuen').single()
+      if (data) setBrandId(data.id)
+    }
+    fetchBrand()
+  }, [])
+
+  // ブランドID取得後にキャストデータを取得
+  useEffect(() => {
+    if (!brandId) return
     const fetchCasts = async () => {
       const { data } = await supabase
         .from('girls')
         .select('*')
+        .eq('brand_id', brandId)
         .eq('is_attending', true)
         .order('ranking_order', { ascending: true })
       if (data) {
@@ -170,7 +182,7 @@ export default function FunabashiPage() {
       }
     }
     fetchCasts()
-  }, [])
+  }, [brandId])
 
   // チャット自動スクロール
   useEffect(() => {
@@ -584,7 +596,7 @@ export default function FunabashiPage() {
         <ScheduleSection />
       </div>
 
-      <DiarySection />
+      <DiarySection brandSlug="idol-gakuen" />
 
       {/* 在籍一覧ボタン */}
       <div className="max-w-2xl mx-auto px-4 mb-6">

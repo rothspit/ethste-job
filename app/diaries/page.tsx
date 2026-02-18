@@ -10,12 +10,23 @@ const supabase = createClient(
 )
 
 export default async function DiariesPage() {
-  // 全キャストの日記を新着順で取得
-  const { data: diaries } = await supabase
+  // アイドル学園のブランドIDを取得
+  const { data: brand } = await supabase
+    .from('brands')
+    .select('id')
+    .eq('slug', 'idol-gakuen')
+    .single()
+
+  // アイドル学園の日記を新着順で取得
+  let query = supabase
     .from('diaries')
     .select('*, girls(id, name, images)')
     .order('created_at', { ascending: false })
     .limit(50)
+
+  if (brand) query = query.eq('brand_id', brand.id)
+
+  const { data: diaries } = await query
 
   return (
     <main className="min-h-screen bg-gray-50 pb-20">
