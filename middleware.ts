@@ -143,28 +143,37 @@ export function middleware(req: NextRequest) {
 
   // --- ブランド判定 ---
   const brand = resolveBrand(req)
+  const hostname = getHostname(req)
   const requestHeaders = new Headers(req.headers)
   requestHeaders.set('x-brand-slug', brand.slug)
   requestHeaders.set('x-brand-style', brand.style)
 
+  // デバッグ用レスポンスヘッダー
+  const debugHeaders = {
+    'x-debug-hostname': hostname,
+    'x-debug-brand': brand.slug,
+    'x-debug-host-raw': req.headers.get('host') ?? '',
+    'x-debug-x-forwarded-host': req.headers.get('x-forwarded-host') ?? '',
+  }
+
   // --- パススルー（リライト不要パス） ---
   if (isPassthroughPath(pathname)) {
-    return NextResponse.next({
-      request: { headers: requestHeaders },
-    })
+    const res = NextResponse.next({ request: { headers: requestHeaders } })
+    Object.entries(debugHeaders).forEach(([k, v]) => res.headers.set(k, v))
+    return res
   }
 
   // --- URLリライト判定 ---
   const rewriteUrl = resolveRewrite(req, brand)
 
   if (rewriteUrl) {
-    return NextResponse.rewrite(rewriteUrl, {
-      request: { headers: requestHeaders },
-    })
+    const res = NextResponse.rewrite(rewriteUrl, { request: { headers: requestHeaders } })
+    Object.entries(debugHeaders).forEach(([k, v]) => res.headers.set(k, v))
+    return res
   }
 
   // --- デフォルト: そのまま通す ---
-  return NextResponse.next({
-    request: { headers: requestHeaders },
-  })
+  const res = NextResponse.next({ request: { headers: requestHeaders } })
+  Object.entries(debugHeaders).forEach(([k, v]) => res.headers.set(k, v))
+  return res
 }
