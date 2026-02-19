@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const sas = await getGirlSAS()
-    const blobUrl = `${MRVENREY_BLOB}/${process.env.MRVENREY_ID}/image/girls/${guid}/60_80.jpg`
+    const blobUrl = `${MRVENREY_BLOB}/${process.env.MRVENREY_ID}/image/girls/${guid}/600_800.jpg`
     const separator = sas.startsWith('?') ? '' : '?'
     const fetchUrl = `${blobUrl}${separator}${sas}`
 

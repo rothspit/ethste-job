@@ -52,7 +52,7 @@ const GUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 // GUID → Azure Blob ベースURL（SASなし）
 function toBlobUrl(imageValue: string): string {
   if (GUID_RE.test(imageValue)) {
-    return `${MRVENREY_BLOB}/${process.env.MRVENREY_ID}/image/girls/${imageValue}/60_80.jpg`
+    return `${MRVENREY_BLOB}/${process.env.MRVENREY_ID}/image/girls/${imageValue}/600_800.jpg`
   }
   // フルURLの場合 → SAS除去
   return imageValue.split('?')[0]
