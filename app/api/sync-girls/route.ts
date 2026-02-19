@@ -59,18 +59,24 @@ async function getMrVenreyGirls(token: string): Promise<any[]> {
 // Image処理
 // ============================================
 
-// MrVenrey の Image URL から GUID を抽出
-// 形式: https://mrvenreyweb.blob.core.windows.net/te14/image/girls/{GUID}/60_80.jpg?sas...
-function extractGuid(imageUrl: string): string | null {
-  const match = imageUrl.match(/\/girls\/([0-9a-f-]+)\//i)
-  return match ? match[1] : null
-}
-
 // Image1〜Image3 のみ対象
 const IMAGE_KEYS = ['Image1', 'Image2', 'Image3'] as const
 
-function collectImageUrls(mr: any): string[] {
+function collectImageValues(mr: any): string[] {
   return IMAGE_KEYS.map((k) => mr[k]).filter(Boolean)
+}
+
+// GUID かどうか判定
+const GUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+// Image 値から Azure Blob URL を構築
+function toBlobUrl(imageValue: string): string {
+  // GUID のみの場合 → フル URL を構築
+  if (GUID_RE.test(imageValue)) {
+    return `${MRVENREY_BLOB}/${process.env.MRVENREY_ID}/image/girls/${imageValue}/60_80.jpg`
+  }
+  // フル URL の場合 → 既存 SAS を除去
+  return imageValue.split('?')[0]
 }
 
 // Azure Blob から画像を取得して Supabase Storage にアップロード
@@ -80,14 +86,14 @@ async function syncImage(
   sas: string,
   storagePath: string,
 ): Promise<string | null> {
-  // SAS 付きで Azure Blob から fetch
-  const separator = blobUrl.includes('?') ? '&' : '?'
-  const fetchUrl = `${blobUrl}${separator}${sas}`
+  const fetchUrl = `${blobUrl}?${sas}`
 
   const res = await fetch(fetchUrl)
   if (!res.ok) return null
 
   const blob = await res.arrayBuffer()
+  if (blob.byteLength === 0) return null
+
   const contentType = res.headers.get('content-type') || 'image/jpeg'
 
   // Supabase Storage にアップロード（既存なら上書き）
@@ -161,20 +167,17 @@ export async function GET(req: Request) {
     for (const mr of mrGirls) {
       try {
         const mrId = String(mr.GirlId)
-        const rawImageUrls = collectImageUrls(mr)
+        const rawImageValues = collectImageValues(mr)
 
         // 画像を Supabase Storage に同期
         const storageUrls: string[] = []
-        for (let i = 0; i < rawImageUrls.length; i++) {
-          const url = rawImageUrls[i]
-          const guid = extractGuid(url)
+        for (let i = 0; i < rawImageValues.length; i++) {
+          const imageValue = rawImageValues[i]
           // Storage パス: {GirlId}/{1,2,3}.jpg
           const storagePath = `${mrId}/${i + 1}.jpg`
 
-          // 画像URLを SAS なしの blob URL に正規化
-          const blobUrl = guid
-            ? `${MRVENREY_BLOB}/${process.env.MRVENREY_ID}/image/girls/${guid}/60_80.jpg`
-            : url.split('?')[0] // SAS が既に付いてる場合は除去
+          // GUID またはフル URL から SAS なしの blob URL を構築
+          const blobUrl = toBlobUrl(imageValue)
 
           const publicUrl = await syncImage(supabase, blobUrl, girlSAS, storagePath)
           if (publicUrl) {
