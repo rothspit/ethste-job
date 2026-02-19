@@ -17,6 +17,8 @@ export default function GirlDetailPage() {
   const [reviews, setReviews] = useState<any[]>([]) // 口コミ用
   const [relatedGirls, setRelatedGirls] = useState<any[]>([]) // 関連キャスト用
   const [loading, setLoading] = useState(true)
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const [touchStart, setTouchStart] = useState<number | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,8 +79,6 @@ export default function GirlDetailPage() {
   if (!girl) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-400">データが見つかりません</div>
 
   const allImages = (girl.images && girl.images.length > 0) ? girl.images : (girl.image1_url ? [girl.image1_url] : [])
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [touchStart, setTouchStart] = useState<number | null>(null)
 
   const goToSlide = (index: number) => {
     if (index < 0) setCurrentSlide(allImages.length - 1)
