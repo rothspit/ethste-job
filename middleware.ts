@@ -113,7 +113,7 @@ function resolveRewrite(
 
   // hitomitsu ドメイン
   if (brand.slug === 'hitomitsu') {
-    if (pathname === '/') {
+    if (pathname === '/' || pathname === '/nishifuna' || pathname === '/nishifuna.html') {
       return new URL('/mitsu', req.url)
     }
     for (const [prefix, target] of MITSU_REWRITE_MAP) {
