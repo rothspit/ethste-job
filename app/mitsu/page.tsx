@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getBrand } from '@/lib/brand/get-brand'
 import { getTodaySchedule, getDiariesByBrand, getGirlsByBrand } from '@/lib/brand/brand-queries'
 import type { Girl, Schedule, Diary } from '@/lib/brand/brand-queries'
+import { getGirlImageUrl } from '@/lib/brand/image-utils'
 
 const SLUG = 'hitomitsu'
 const serif = "var(--font-noto-serif), 'Noto Serif JP', serif"
@@ -26,7 +27,7 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 
 function ScheduleCard({ schedule }: { schedule: Schedule }) {
   const girl = schedule.girl as Girl | undefined
-  const imageUrl = girl?.profile_image_url ?? (girl as any)?.image1_url ?? null
+  const imageUrl = getGirlImageUrl(girl)
 
   return (
     <div className="flex-shrink-0 w-36 bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition">

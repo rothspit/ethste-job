@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getBrand } from '@/lib/brand/get-brand'
 import { getGirlById } from '@/lib/brand/brand-queries'
+import { getGirlImageUrl, getGirlImageUrls } from '@/lib/brand/image-utils'
 
 const SLUG = 'hitomitsu'
 const serif = "var(--font-noto-serif), 'Noto Serif JP', serif"
@@ -12,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
   const [brand, girl] = await Promise.all([getBrand(SLUG), getGirlById(id, SLUG)])
   if (!girl) return { title: `キャスト不明｜${brand.name}` }
-  const imageUrl = girl.profile_image_url ?? (girl as any)?.image1_url ?? '/main_mitsu.jpg'
+  const imageUrl = getGirlImageUrl(girl) ?? '/main_mitsu.jpg'
   const extra = girl as any
   const ageText = girl.age ? `${girl.age}歳` : ''
   const cupText = extra.cup ? ` / ${extra.cup}カップ` : ''
@@ -57,7 +58,7 @@ export default async function MitsuGirlDetailPage({ params }: Props) {
     )
   }
 
-  const imageUrl = girl.profile_image_url ?? (girl as any)?.image1_url ?? null
+  const imageUrl = getGirlImageUrl(girl)
   const extra = girl as any
 
   return (

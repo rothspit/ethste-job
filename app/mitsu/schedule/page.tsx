@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { getBrand } from '@/lib/brand/get-brand'
 import { getTodaySchedule } from '@/lib/brand/brand-queries'
 import type { Girl, Schedule } from '@/lib/brand/brand-queries'
+import { getGirlImageUrl } from '@/lib/brand/image-utils'
 
 const SLUG = 'hitomitsu'
 const serif = "var(--font-noto-serif), 'Noto Serif JP', serif"
@@ -31,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 function ScheduleRow({ schedule }: { schedule: Schedule }) {
   const girl = schedule.girl as Girl | undefined
-  const imageUrl = girl?.profile_image_url ?? (girl as any)?.image1_url ?? null
+  const imageUrl = getGirlImageUrl(girl)
 
   return (
     <Link

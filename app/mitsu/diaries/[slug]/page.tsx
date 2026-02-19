@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getBrand } from '@/lib/brand/get-brand'
 import { getDiaryBySlug } from '@/lib/brand/brand-queries'
+import { getGirlImageUrl } from '@/lib/brand/image-utils'
 
 const SLUG = 'hitomitsu'
 const serif = "var(--font-noto-serif), 'Noto Serif JP', serif"
@@ -55,7 +56,7 @@ export default async function MitsuDiaryDetailPage({ params }: Props) {
   }
 
   const girlName = diary.girl ? (diary.girl as any).name : null
-  const girlImage = diary.girl ? (diary.girl as any).profile_image_url : null
+  const girlImage = diary.girl ? getGirlImageUrl(diary.girl) : null
   const date = diary.published_at
     ? new Date(diary.published_at).toLocaleDateString('ja-JP', {
         year: 'numeric',
