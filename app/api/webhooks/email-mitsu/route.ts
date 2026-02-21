@@ -119,11 +119,11 @@ export async function POST(request: Request) {
         .from('diaries')
         .insert({
           girl_id: girl.id,
-          brand_id: girl.brand_id,
+          brand_id: 'a1876a1a-1b51-4970-b25e-893ce0910690',
           title: subject,
           content: text,
-          images: imageUrls,
-          videos: videoUrls,
+          image_url: imageUrls[0] || null,
+          videos: videoUrls.join(','),
         })
 
       if (insertError) {
