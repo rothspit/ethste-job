@@ -69,11 +69,22 @@ function dayLabel(d: Date): string {
   return days[d.getDay()]
 }
 
-const TIME_OPTIONS: string[] = []
-for (let h = 0; h < 24; h++) {
-  for (let m = 0; m < 60; m += 30) {
-    TIME_OPTIONS.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
-  }
+// 10:00〜翌06:00（30分刻み）
+const TIME_OPTIONS: { value: string; label: string }[] = []
+for (let i = 0; i <= 40; i++) {
+  const totalMinutes = 10 * 60 + i * 30 // start from 10:00
+  const h = Math.floor(totalMinutes / 60) % 24
+  const m = totalMinutes % 60
+  const value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+  const prefix = totalMinutes >= 24 * 60 ? '翌' : ''
+  TIME_OPTIONS.push({ value, label: `${prefix}${value}` })
+}
+
+function formatTimeDisplay(t: string | null | undefined): string {
+  if (!t) return ''
+  const hh = t.slice(0, 5)
+  const h = parseInt(hh.slice(0, 2), 10)
+  return h < 7 ? `翌${hh}` : hh
 }
 
 const BRAND_ID = 'hitomitsu'
@@ -87,7 +98,7 @@ export default function MitsuSchedulePage() {
   const [editForm, setEditForm] = useState<EditForm>({
     status: 'unset',
     start_time: '10:00',
-    end_time: '20:00',
+    end_time: '03:00',
     comment: '',
     area_id: '',
   })
@@ -173,7 +184,7 @@ export default function MitsuSchedulePage() {
     setEditForm({
       status: (existing?.status as EditForm['status']) || 'unset',
       start_time: existing?.start_time?.slice(0, 5) || '10:00',
-      end_time: existing?.end_time?.slice(0, 5) || '20:00',
+      end_time: existing?.end_time?.slice(0, 5) || '03:00',
       comment: existing?.comment || '',
       area_id: existing?.area_id || '',
     })
@@ -320,7 +331,7 @@ export default function MitsuSchedulePage() {
                         content = (
                           <div className="text-[11px]">
                             <div className="text-green-400 font-bold">
-                              {sched?.start_time?.slice(0, 5)}-{sched?.end_time?.slice(0, 5)}
+                              {formatTimeDisplay(sched?.start_time)}-{formatTimeDisplay(sched?.end_time)}
                             </div>
                             {area && (
                               <span className="inline-block mt-0.5 px-1.5 py-0.5 bg-blue-900/40 text-blue-300 text-[9px] rounded">
@@ -430,7 +441,7 @@ export default function MitsuSchedulePage() {
                         className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm"
                       >
                         {TIME_OPTIONS.map((t) => (
-                          <option key={t} value={t}>{t}</option>
+                          <option key={t.value} value={t.value}>{t.label}</option>
                         ))}
                       </select>
                     </div>
@@ -444,7 +455,7 @@ export default function MitsuSchedulePage() {
                         className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm"
                       >
                         {TIME_OPTIONS.map((t) => (
-                          <option key={t} value={t}>{t}</option>
+                          <option key={t.value} value={t.value}>{t.label}</option>
                         ))}
                       </select>
                     </div>
