@@ -31,6 +31,7 @@ export interface Schedule {
   comment?: string
   area_id?: string
   girl?: Girl
+  area?: { id: string; name: string; slug: string } | null
   [key: string]: unknown
 }
 
@@ -105,11 +106,13 @@ export async function getGirlById(id: string, forceSlug?: string): Promise<Girl 
 
 export async function getTodaySchedule(forceSlug?: string): Promise<Schedule[]> {
   const brand = await getBrand(forceSlug)
-  const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
+  // JST (UTC+9) で今日の日付を取得
+  const jstNow = new Date(Date.now() + 9 * 60 * 60 * 1000)
+  const today = jstNow.toISOString().slice(0, 10) // YYYY-MM-DD
 
   const { data, error } = await supabase
     .from('schedules')
-    .select('*, girl:girls(*)')
+    .select('*, girl:girls(*), area:areas(id, name, slug)')
     .eq('brand_id', brand.id)
     .eq('date', today)
     .eq('status', 'working')

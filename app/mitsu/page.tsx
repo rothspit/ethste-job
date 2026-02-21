@@ -25,9 +25,17 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   )
 }
 
+function formatTime(t: string | null | undefined): string {
+  if (!t) return ''
+  const hh = t.slice(0, 5)
+  const h = parseInt(hh.slice(0, 2), 10)
+  return h < 7 ? `翌${hh}` : hh
+}
+
 function ScheduleCard({ schedule }: { schedule: Schedule }) {
   const girl = schedule.girl as Girl | undefined
   const imageUrl = getGirlImageUrl(girl)
+  const areaName = schedule.area?.name
 
   return (
     <div className="flex-shrink-0 w-36 bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition">
@@ -43,8 +51,11 @@ function ScheduleCard({ schedule }: { schedule: Schedule }) {
           {girl?.name || '—'}
         </p>
         <p className="text-[10px] text-[#b8860b] mt-1">
-          {schedule.start_time?.slice(0, 5)} - {schedule.end_time?.slice(0, 5)}
+          {formatTime(schedule.start_time)} - {formatTime(schedule.end_time)}
         </p>
+        {areaName && (
+          <p className="text-[9px] text-[#78716c] mt-0.5">{areaName}</p>
+        )}
       </div>
     </div>
   )
