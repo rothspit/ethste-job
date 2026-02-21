@@ -104,6 +104,8 @@ export default function MitsuSchedulePage() {
   })
   const [saving, setSaving] = useState(false)
   const [brandId, setBrandId] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showWorkingOnly, setShowWorkingOnly] = useState(false)
 
   // Resolve brand UUID from slug
   useEffect(() => {
@@ -231,6 +233,16 @@ export default function MitsuSchedulePage() {
     return areas.find((a) => a.id === areaId)?.name || null
   }
 
+  // Filter girls
+  const girlIdsWithWorking = new Set(
+    schedules.filter((s) => s.status === 'working').map((s) => s.girl_id)
+  )
+  const filteredGirls = girls.filter((g) => {
+    if (searchQuery && !g.name.includes(searchQuery)) return false
+    if (showWorkingOnly && !girlIdsWithWorking.has(g.id)) return false
+    return true
+  })
+
   // Week label
   const weekLabel = `${weekStart.getMonth() + 1}/${weekStart.getDate()}〜${addDays(weekStart, 6).getMonth() + 1}/${addDays(weekStart, 6).getDate()}`
 
@@ -271,8 +283,32 @@ export default function MitsuSchedulePage() {
         </div>
       </header>
 
+      {/* Filter bar */}
+      <div className="max-w-7xl mx-auto px-4 pt-3 pb-1 flex items-center gap-3 flex-wrap">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="キャスト名で検索..."
+          className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm w-48 placeholder:text-slate-500 focus:outline-none focus:border-slate-500"
+        />
+        <button
+          onClick={() => setShowWorkingOnly(!showWorkingOnly)}
+          className={`px-3 py-1.5 text-xs font-bold rounded-lg transition ${
+            showWorkingOnly
+              ? 'bg-green-600 text-white'
+              : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+          }`}
+        >
+          出勤ありのみ
+        </button>
+        <span className="text-xs text-slate-500 ml-auto">
+          {filteredGirls.length}/{girls.length}人表示
+        </span>
+      </div>
+
       {/* Grid */}
-      <div className="max-w-7xl mx-auto px-2 py-4">
+      <div className="max-w-7xl mx-auto px-2 py-2">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse min-w-[700px]">
             <thead>
@@ -301,7 +337,7 @@ export default function MitsuSchedulePage() {
               </tr>
             </thead>
             <tbody>
-              {girls.map((girl) => {
+              {filteredGirls.map((girl) => {
                 const imageUrl = getGirlImageUrl(girl)
                 return (
                   <tr key={girl.id} className="border-b border-slate-800 hover:bg-slate-800/30">
@@ -365,7 +401,7 @@ export default function MitsuSchedulePage() {
                   </tr>
                 )
               })}
-              {girls.length === 0 && (
+              {filteredGirls.length === 0 && (
                 <tr>
                   <td colSpan={8} className="text-center py-20 text-slate-500">
                     キャストが見つかりません
