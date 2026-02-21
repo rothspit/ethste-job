@@ -158,7 +158,7 @@ export default async function MitsuPage() {
     getTodaySchedule(SLUG),
     getDiariesByBrand({ limit: 6, forceSlug: SLUG }),
     getGirlsByBrand({ limit: 12, forceSlug: SLUG }),
-    getPhotoDiaries({ limit: 6, forceSlug: SLUG }),
+    getPhotoDiaries({ limit: 3, forceSlug: SLUG }),
   ])
 
   const jsonLd = {
