@@ -106,6 +106,14 @@ export default function MitsuSchedulePage() {
   const [brandId, setBrandId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [showWorkingOnly, setShowWorkingOnly] = useState(false)
+  const [showBulk, setShowBulk] = useState(false)
+  const [bulkDate, setBulkDate] = useState(() => formatDate(new Date()))
+  const [bulkStartTime, setBulkStartTime] = useState('10:00')
+  const [bulkEndTime, setBulkEndTime] = useState('03:00')
+  const [bulkAreaId, setBulkAreaId] = useState('')
+  const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set())
+  const [bulkSearch, setBulkSearch] = useState('')
+  const [bulkSaving, setBulkSaving] = useState(false)
 
   // Resolve brand UUID from slug
   useEffect(() => {
@@ -227,6 +235,43 @@ export default function MitsuSchedulePage() {
     setEditingCell(null)
   }
 
+  // Bulk register
+  const handleBulkSave = async () => {
+    if (!brandId || bulkSelected.size === 0) return
+    setBulkSaving(true)
+    try {
+      const payloads = Array.from(bulkSelected).map((girlId) => ({
+        girl_id: girlId,
+        date: bulkDate,
+        brand_id: brandId,
+        status: 'working' as const,
+        start_time: bulkStartTime,
+        end_time: bulkEndTime,
+        area_id: bulkAreaId || null,
+        comment: null,
+      }))
+      await supabase.from('schedules').upsert(payloads, { onConflict: 'girl_id,date' })
+      await fetchSchedules()
+      setShowBulk(false)
+      setBulkSelected(new Set())
+    } finally {
+      setBulkSaving(false)
+    }
+  }
+
+  const toggleBulkGirl = (id: string) => {
+    setBulkSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const bulkFilteredGirls = girls.filter((g) =>
+    !bulkSearch || g.name.includes(bulkSearch)
+  )
+
   // Area name lookup
   const areaName = (areaId: string | null): string | null => {
     if (!areaId) return null
@@ -260,6 +305,12 @@ export default function MitsuSchedulePage() {
             </h1>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => { setBulkDate(formatDate(new Date())); setBulkSelected(new Set()); setBulkSearch(''); setShowBulk(true) }}
+              className="px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-500 rounded font-bold"
+            >
+              一括登録
+            </button>
             <button
               onClick={goToday}
               className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 rounded font-bold"
@@ -552,6 +603,148 @@ export default function MitsuSchedulePage() {
                   {saving ? '保存中...' : '保存'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Bulk Register Modal */}
+      {showBulk && (
+        <div
+          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowBulk(false) }}
+        >
+          <div className="bg-slate-800 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-700 overflow-hidden max-h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="bg-slate-900 px-5 py-4 flex items-center justify-between flex-shrink-0">
+              <p className="font-bold text-sm">一括登録</p>
+              <button
+                onClick={() => setShowBulk(false)}
+                className="text-slate-400 hover:text-white text-xl leading-none"
+              >
+                &times;
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4 overflow-y-auto flex-1">
+              {/* Date */}
+              <div>
+                <label className="text-[10px] text-slate-500 uppercase tracking-wider block mb-1">日付</label>
+                <input
+                  type="date"
+                  value={bulkDate}
+                  onChange={(e) => setBulkDate(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
+
+              {/* Time */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] text-slate-500 uppercase tracking-wider block mb-1">開始時間</label>
+                  <select
+                    value={bulkStartTime}
+                    onChange={(e) => setBulkStartTime(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm"
+                  >
+                    {TIME_OPTIONS.map((t) => (
+                      <option key={t.value} value={t.value}>{t.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] text-slate-500 uppercase tracking-wider block mb-1">終了時間</label>
+                  <select
+                    value={bulkEndTime}
+                    onChange={(e) => setBulkEndTime(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm"
+                  >
+                    {TIME_OPTIONS.map((t) => (
+                      <option key={t.value} value={t.value}>{t.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Area */}
+              <div>
+                <label className="text-[10px] text-slate-500 uppercase tracking-wider block mb-1">エリア</label>
+                <select
+                  value={bulkAreaId}
+                  onChange={(e) => setBulkAreaId(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm"
+                >
+                  <option value="">未選択</option>
+                  {areas.map((a) => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Cast selection */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[10px] text-slate-500 uppercase tracking-wider">
+                    キャスト選択（{bulkSelected.size}人）
+                  </label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setBulkSelected(new Set(bulkFilteredGirls.map((g) => g.id)))}
+                      className="text-[10px] text-blue-400 hover:text-blue-300"
+                    >
+                      全選択
+                    </button>
+                    <button
+                      onClick={() => setBulkSelected(new Set())}
+                      className="text-[10px] text-slate-400 hover:text-slate-300"
+                    >
+                      全解除
+                    </button>
+                  </div>
+                </div>
+                <input
+                  type="text"
+                  value={bulkSearch}
+                  onChange={(e) => setBulkSearch(e.target.value)}
+                  placeholder="名前で絞り込み..."
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm mb-2 placeholder:text-slate-500"
+                />
+                <div className="max-h-52 overflow-y-auto space-y-0.5 bg-slate-900 rounded-lg border border-slate-700 p-1">
+                  {bulkFilteredGirls.map((g) => (
+                    <label
+                      key={g.id}
+                      className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer transition text-sm ${
+                        bulkSelected.has(g.id) ? 'bg-green-900/30' : 'hover:bg-slate-800'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={bulkSelected.has(g.id)}
+                        onChange={() => toggleBulkGirl(g.id)}
+                        className="accent-green-500"
+                      />
+                      <span className="truncate">{g.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-5 py-4 border-t border-slate-700 flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={() => setShowBulk(false)}
+                className="px-4 py-2.5 text-xs text-slate-400 bg-slate-700 rounded-lg hover:bg-slate-600 transition"
+              >
+                キャンセル
+              </button>
+              <div className="flex-1" />
+              <button
+                onClick={handleBulkSave}
+                disabled={bulkSaving || bulkSelected.size === 0}
+                className="px-6 py-2.5 text-xs font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition disabled:opacity-50"
+              >
+                {bulkSaving ? '登録中...' : `${bulkSelected.size}人を一括登録`}
+              </button>
             </div>
           </div>
         </div>
