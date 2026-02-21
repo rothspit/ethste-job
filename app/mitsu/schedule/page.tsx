@@ -30,9 +30,17 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
+function formatTime(t: string | null | undefined): string {
+  if (!t) return ''
+  const hh = t.slice(0, 5)
+  const h = parseInt(hh.slice(0, 2), 10)
+  return h < 7 ? `翌${hh}` : hh
+}
+
 function ScheduleRow({ schedule }: { schedule: Schedule }) {
   const girl = schedule.girl as Girl | undefined
   const imageUrl = getGirlImageUrl(girl)
+  const areaName = schedule.area?.name
 
   return (
     <Link
@@ -51,12 +59,15 @@ function ScheduleRow({ schedule }: { schedule: Schedule }) {
           {girl?.name || '—'}
         </p>
         {girl?.age && <p className="text-[10px] text-[#78716c] mt-0.5">{girl.age}歳</p>}
+        {areaName && (
+          <p className="text-[10px] text-[#b8860b]/70 mt-0.5">{areaName}</p>
+        )}
       </div>
       <div className="text-right flex-shrink-0">
         <p className="text-sm font-medium text-[#b8860b]" style={{ fontFamily: serif }}>
-          {schedule.start_time?.slice(0, 5)}
+          {formatTime(schedule.start_time)}
         </p>
-        <p className="text-[10px] text-[#a8a29e]">〜 {schedule.end_time?.slice(0, 5)}</p>
+        <p className="text-[10px] text-[#a8a29e]">〜 {formatTime(schedule.end_time)}</p>
       </div>
     </Link>
   )
@@ -68,7 +79,7 @@ export default async function MitsuSchedulePage() {
     getTodaySchedule(SLUG),
   ])
 
-  const today = new Date().toLocaleDateString('ja-JP', {
+  const today = new Date(Date.now() + 9 * 60 * 60 * 1000).toLocaleDateString('ja-JP', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
