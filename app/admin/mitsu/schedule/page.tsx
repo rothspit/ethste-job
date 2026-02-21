@@ -143,7 +143,7 @@ export default function MitsuSchedulePage() {
       const { data } = await supabase
         .from('areas')
         .select('*')
-        .eq('brand_id', BRAND_ID)
+        .in('slug', ['nishifunabashi', 'kasai', 'kinshicho'])
         .order('sort_order', { ascending: true })
       if (data) setAreas(data)
     }
