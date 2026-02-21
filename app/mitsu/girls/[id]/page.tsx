@@ -1,10 +1,20 @@
 import type { Metadata } from 'next'
 import { getBrand } from '@/lib/brand/get-brand'
-import { getGirlById } from '@/lib/brand/brand-queries'
+import { getGirlById, getWeekScheduleByGirl } from '@/lib/brand/brand-queries'
+import type { Schedule } from '@/lib/brand/brand-queries'
 import { getGirlImageUrl } from '@/lib/brand/image-utils'
 import MitsuGirlDetail from './detail'
 
 const SLUG = 'hitomitsu'
+
+function getMonday(): string {
+  const now = new Date(Date.now() + 9 * 60 * 60 * 1000)
+  const day = now.getDay()
+  const diff = now.getDate() - day + (day === 0 ? -6 : 1)
+  const mon = new Date(now)
+  mon.setDate(diff)
+  return mon.toISOString().slice(0, 10)
+}
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -41,6 +51,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function MitsuGirlDetailPage({ params }: Props) {
   const { id } = await params
-  const [brand, girl] = await Promise.all([getBrand(SLUG), getGirlById(id, SLUG)])
-  return <MitsuGirlDetail girl={girl} brand={brand} />
+  const weekStart = getMonday()
+  const [brand, girl, weekSchedules] = await Promise.all([
+    getBrand(SLUG),
+    getGirlById(id, SLUG),
+    getWeekScheduleByGirl(id, weekStart, SLUG),
+  ])
+  return <MitsuGirlDetail girl={girl} brand={brand} weekSchedules={weekSchedules} weekStart={weekStart} />
 }

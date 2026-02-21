@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { getBrand } from '@/lib/brand/get-brand'
-import { getTodaySchedule, getDiariesByBrand, getGirlsByBrand } from '@/lib/brand/brand-queries'
-import type { Girl, Schedule, Diary } from '@/lib/brand/brand-queries'
+import { getTodaySchedule, getDiariesByBrand, getGirlsByBrand, getPhotoDiaries } from '@/lib/brand/brand-queries'
+import type { Girl, Schedule, Diary, PhotoDiary } from '@/lib/brand/brand-queries'
 import { getGirlImageUrl } from '@/lib/brand/image-utils'
 
 const SLUG = 'hitomitsu'
@@ -94,6 +94,28 @@ function DiaryCard({ diary }: { diary: Diary }) {
   )
 }
 
+function PhotoDiaryCard({ diary }: { diary: PhotoDiary }) {
+  const girlName = diary.girl?.name || '—'
+  const date = new Date(diary.published_at).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })
+
+  return (
+    <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition">
+      <div className="aspect-square bg-[#f5f5f4] overflow-hidden">
+        <img src={diary.image_url} alt={`${girlName}の写メ日記`} className="w-full h-full object-cover" />
+      </div>
+      <div className="p-3">
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-[10px] text-[#b8860b]">{girlName}</p>
+          <p className="text-[10px] text-[#78716c]">{date}</p>
+        </div>
+        {diary.comment && (
+          <p className="text-[10px] text-[#44403c] leading-relaxed line-clamp-2">{diary.comment}</p>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function GirlCard({ girl }: { girl: Girl }) {
   const imageUrl = girl.profile_image_url ?? (girl as any)?.image1_url ?? null
 
@@ -131,11 +153,12 @@ function GirlCard({ girl }: { girl: Girl }) {
 // ============================================
 
 export default async function MitsuPage() {
-  const [brand, schedules, diaries, girls] = await Promise.all([
+  const [brand, schedules, diaries, girls, photoDiaries] = await Promise.all([
     getBrand(SLUG),
     getTodaySchedule(SLUG),
     getDiariesByBrand({ limit: 6, forceSlug: SLUG }),
     getGirlsByBrand({ limit: 12, forceSlug: SLUG }),
+    getPhotoDiaries({ limit: 6, forceSlug: SLUG }),
   ])
 
   const jsonLd = {
@@ -237,23 +260,23 @@ export default async function MitsuPage() {
         </div>
       </section>
 
-      {/* ===== 最新の日記 ===== */}
+      {/* ===== 写メ日記 ===== */}
       <section className="py-16">
         <div className="max-w-2xl mx-auto px-4">
-          <SectionHeading>最新の日記</SectionHeading>
-          {diaries.length > 0 ? (
+          <SectionHeading>写メ日記</SectionHeading>
+          {photoDiaries.length > 0 ? (
             <>
               <div className="grid grid-cols-2 gap-4">
-                {diaries.map((d) => (
-                  <DiaryCard key={d.id} diary={d} />
+                {photoDiaries.map((d) => (
+                  <PhotoDiaryCard key={d.id} diary={d} />
                 ))}
               </div>
               <div className="mt-10 text-center">
                 <Link
-                  href="/mitsu/diaries"
+                  href="/mitsu/diary"
                   className="inline-block border border-[#b8860b]/30 text-[#b8860b] text-xs px-8 py-3 tracking-[0.15em] hover:bg-[#b8860b]/5 transition"
                 >
-                  すべての日記を見る
+                  すべての写メ日記を見る
                 </Link>
               </div>
             </>
@@ -337,7 +360,7 @@ export default async function MitsuPage() {
             <span className="text-[9px] tracking-wider mt-0.5">キャスト</span>
           </Link>
           <Link
-            href="/mitsu/diaries"
+            href="/mitsu/diary"
             className="flex-1 flex flex-col items-center justify-center py-3 text-[#78716c] hover:text-[#b8860b] transition"
           >
             <span className="text-base">📝</span>

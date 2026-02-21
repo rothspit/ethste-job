@@ -35,6 +35,17 @@ export interface Schedule {
   [key: string]: unknown
 }
 
+export interface PhotoDiary {
+  id: string
+  girl_id: string
+  brand_id: string
+  image_url: string
+  comment: string | null
+  published_at: string
+  created_at: string
+  girl?: { id: string; name: string } | null
+}
+
 export interface Diary {
   id: string
   brand_id: string
@@ -125,6 +136,46 @@ export async function getTodaySchedule(forceSlug?: string): Promise<Schedule[]> 
   return (data ?? []) as Schedule[]
 }
 
+export async function getScheduleByDate(date: string, forceSlug?: string): Promise<Schedule[]> {
+  const brand = await getBrand(forceSlug)
+  const { data, error } = await supabase
+    .from('schedules')
+    .select('*, girl:girls(*), area:areas(id, name, slug)')
+    .eq('brand_id', brand.id)
+    .eq('date', date)
+    .eq('status', 'working')
+    .order('start_time', { ascending: true })
+
+  if (error) {
+    console.error('[getScheduleByDate]', error.message)
+    return []
+  }
+  return (data ?? []) as Schedule[]
+}
+
+export async function getWeekScheduleByGirl(girlId: string, weekStart: string, forceSlug?: string): Promise<Schedule[]> {
+  const brand = await getBrand(forceSlug)
+  // weekStartから6日後
+  const end = new Date(weekStart)
+  end.setDate(end.getDate() + 6)
+  const weekEnd = end.toISOString().slice(0, 10)
+
+  const { data, error } = await supabase
+    .from('schedules')
+    .select('*, area:areas(id, name, slug)')
+    .eq('brand_id', brand.id)
+    .eq('girl_id', girlId)
+    .gte('date', weekStart)
+    .lte('date', weekEnd)
+    .order('date', { ascending: true })
+
+  if (error) {
+    console.error('[getWeekScheduleByGirl]', error.message)
+    return []
+  }
+  return (data ?? []) as Schedule[]
+}
+
 // ============================================
 // Diaries
 // ============================================
@@ -172,4 +223,31 @@ export async function getDiaryBySlug(slug: string, forceSlug?: string): Promise<
     return null
   }
   return (data ?? null) as Diary | null
+}
+
+// ============================================
+// Photo Diaries (写メ日記)
+// ============================================
+
+export async function getPhotoDiaries(opts?: {
+  limit?: number
+  forceSlug?: string
+}): Promise<PhotoDiary[]> {
+  const brand = await getBrand(opts?.forceSlug)
+  let query = supabase
+    .from('photo_diaries')
+    .select('*, girl:girls(id, name)')
+    .eq('brand_id', brand.id)
+    .order('published_at', { ascending: false })
+
+  if (opts?.limit) {
+    query = query.limit(opts.limit)
+  }
+
+  const { data, error } = await query
+  if (error) {
+    console.error('[getPhotoDiaries]', error.message)
+    return []
+  }
+  return (data ?? []) as PhotoDiary[]
 }
