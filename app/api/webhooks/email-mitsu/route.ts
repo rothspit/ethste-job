@@ -60,7 +60,6 @@ export async function POST(request: Request) {
       const parsed = await simpleParser(Buffer.from(rawBody))
 
       const subject = parsed.subject || '無題'
-      const from = parsed.from?.value[0]?.address || ''
       const text = parsed.text || ''
 
       // 3. 画像と動画を分別
@@ -70,25 +69,29 @@ export async function POST(request: Request) {
 
       console.log(`📝 [h-mitsu] 解析完了: 件名「${subject}」 / 画像${imageFiles.length}枚 / 動画${videoFiles.length}本`)
 
-      // 送信元の女の子を特定（h-mitsuブランドのキャストのみ）
-      const { data: brand } = await supabase
-        .from('brands').select('id').eq('slug', 'hitomitsu').single()
+      // 宛先(TO)から girl_id を抽出: g{girl_id}@post.h-mitsu.com
+      const recipients: string[] = message.mail.destination || []
+      const toAddress = recipients.find((addr: string) => addr.endsWith('@post.h-mitsu.com')) || ''
+      const girlIdMatch = toAddress.match(/^g(.+)@post\.h-mitsu\.com$/)
 
-      if (!brand) {
-        console.error("❌ [h-mitsu] ブランドが見つかりません")
-        return NextResponse.json({ error: 'Brand not found' })
+      if (!girlIdMatch) {
+        console.log(`⚠️ [h-mitsu] 宛先からgirl_idを抽出できません: ${recipients.join(', ')}`)
+        return NextResponse.json({ success: true, message: 'No matching recipient' })
       }
+
+      const girlId = girlIdMatch[1]
+      console.log(`👤 [h-mitsu] girl_id: ${girlId} (宛先: ${toAddress})`)
 
       const { data: girl } = await supabase
         .from('girls')
         .select('id, brand_id')
-        .eq('post_email', from)
-        .eq('brand_id', brand.id)
+        .eq('id', girlId)
+        .eq('brand_id', 'a1876a1a-1b51-4970-b25e-893ce0910690')
         .single()
 
       if (!girl) {
-        console.log(`⚠️ [h-mitsu] 未登録のアドレスからのメールです: ${from}`)
-        return NextResponse.json({ success: true, message: 'User not found' })
+        console.log(`⚠️ [h-mitsu] girl_id=${girlId} が見つかりません`)
+        return NextResponse.json({ success: true, message: 'Girl not found' })
       }
 
       // 4. ファイルアップロード
