@@ -24,10 +24,12 @@ export interface Schedule {
   id: string
   girl_id: string
   brand_id: string
-  work_date: string
+  date: string
   start_time: string
   end_time: string
   status?: string
+  comment?: string
+  area_id?: string
   girl?: Girl
   [key: string]: unknown
 }
@@ -109,7 +111,8 @@ export async function getTodaySchedule(forceSlug?: string): Promise<Schedule[]> 
     .from('schedules')
     .select('*, girl:girls(*)')
     .eq('brand_id', brand.id)
-    .eq('work_date', today)
+    .eq('date', today)
+    .eq('status', 'working')
     .order('start_time', { ascending: true })
 
   if (error) {
