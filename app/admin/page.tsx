@@ -65,7 +65,6 @@ const TAG_CATEGORIES = [
 
 const BRAND_OPTIONS = [
   { slug: 'idol-gakuen', label: '🏫 アイドル学園' },
-  { slug: 'hitomitsu', label: '🍯 人妻の蜜' },
 ]
 
 export default function AdminPage() {

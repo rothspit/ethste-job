@@ -17,9 +17,6 @@ type BrandEntry = { slug: string; style: string }
 const BRAND_MAP: Record<string, BrandEntry> = {
   'idolgakuen.jp':       { slug: 'idol-gakuen', style: 'pop' },
   'www.idolgakuen.jp':   { slug: 'idol-gakuen', style: 'pop' },
-  'h-mitsu.com':         { slug: 'hitomitsu',   style: 'luxury' },
-  'www.h-mitsu.com':     { slug: 'hitomitsu',   style: 'luxury' },
-  'localhost:3001':      { slug: 'hitomitsu',   style: 'luxury' },
 }
 
 const DEFAULT_BRAND: BrandEntry = { slug: 'idol-gakuen', style: 'pop' }
@@ -28,25 +25,22 @@ const DEFAULT_BRAND: BrandEntry = { slug: 'idol-gakuen', style: 'pop' }
 // ブランド判定
 // ============================================
 function getHostname(req: NextRequest): string {
-  // Vercel等のリバースプロキシ環境では x-forwarded-host に実際のドメインが入る
   return req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? ''
 }
 
 function resolveBrand(req: NextRequest): BrandEntry {
-  // クエリパラメータ優先（開発用）
   const brandParam = req.nextUrl.searchParams.get('brand')
   if (brandParam) {
     const entry = Object.values(BRAND_MAP).find((b) => b.slug === brandParam)
     if (entry) return entry
   }
 
-  // ホスト名で判定
   const host = getHostname(req)
   return BRAND_MAP[host] ?? DEFAULT_BRAND
 }
 
 // ============================================
-// /admin/* Basic認証（既存ロジックそのまま）
+// /admin/* Basic認証
 // ============================================
 function handleAdminAuth(req: NextRequest): NextResponse | null {
   const basicAuth = req.headers.get('authorization')
@@ -55,12 +49,11 @@ function handleAdminAuth(req: NextRequest): NextResponse | null {
     const authValue = basicAuth.split(' ')[1]
     const [user, pwd] = atob(authValue).split(':')
 
-    // 環境変数からID・パスワードを取得（Vercelで設定）
     const validUser = process.env.BASIC_AUTH_USER || 'admin'
     const validPass = process.env.BASIC_AUTH_PASS || 'password'
 
     if (user === validUser && pwd === validPass) {
-      return null // 認証OK → 後続処理へ
+      return null
     }
   }
 
@@ -84,16 +77,6 @@ function isPassthroughPath(pathname: string): boolean {
 // ============================================
 // ドメインベースURLリライト
 // ============================================
-
-// h-mitsu.com でリライトするパスとマッピング
-const MITSU_REWRITE_MAP: [string, string][] = [
-  ['/cast',     '/mitsu/cast'],
-  ['/diary',    '/mitsu/diary'],
-  ['/girls',    '/mitsu/girls'],
-  ['/diaries',  '/mitsu/diaries'],
-  ['/schedule', '/mitsu/schedule'],
-]
-
 function resolveRewrite(
   req: NextRequest,
   brand: BrandEntry,
@@ -102,27 +85,12 @@ function resolveRewrite(
   const host = getHostname(req)
   const isPortal = host.startsWith('localhost') && !BRAND_MAP[host]
 
-  // ポータル（localhost:3000等）→ リライトなし
   if (isPortal) return null
 
   // idol-gakuen ドメイン
   if (brand.slug === 'idol-gakuen') {
     if (pathname === '/') {
       return new URL('/funabashi', req.url)
-    }
-    return null
-  }
-
-  // hitomitsu ドメイン
-  if (brand.slug === 'hitomitsu') {
-    if (pathname === '/' || pathname === '/nishifuna' || pathname === '/nishifuna.html') {
-      return new URL('/mitsu', req.url)
-    }
-    for (const [prefix, target] of MITSU_REWRITE_MAP) {
-      if (pathname === prefix || pathname.startsWith(prefix + '/')) {
-        const rest = pathname.slice(prefix.length)
-        return new URL(target + rest, req.url)
-      }
     }
     return null
   }
@@ -140,7 +108,6 @@ export function middleware(req: NextRequest) {
   if (pathname.startsWith('/admin')) {
     const authResponse = handleAdminAuth(req)
     if (authResponse) return authResponse
-    // 認証OK → ブランドヘッダー注入して通す
   }
 
   // --- ブランド判定 ---
@@ -150,7 +117,6 @@ export function middleware(req: NextRequest) {
   requestHeaders.set('x-brand-slug', brand.slug)
   requestHeaders.set('x-brand-style', brand.style)
 
-  // デバッグ用レスポンスヘッダー
   const debugHeaders = {
     'x-debug-hostname': hostname,
     'x-debug-brand': brand.slug,

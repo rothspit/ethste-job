@@ -39,38 +39,6 @@ const FALLBACK_BRANDS: Record<BrandSlug, Brand> = {
       style: 'pop',
     },
   },
-  hitomitsu: {
-    id: '00000000-0000-0000-0000-000000000002',
-    slug: 'hitomitsu',
-    name: '人妻の蜜',
-    domain: 'h-mitsu.com',
-    area: '西船橋・葛西・錦糸町',
-    site_title: '人妻の蜜｜西船橋・葛西・錦糸町',
-    site_tagline: '大人の極上癒やし',
-    description: '人妻の蜜 - 大人の極上癒やし空間。',
-    theme_config: {
-      colors: {
-        primary: '#7c3aed',
-        'primary-light': '#a78bfa',
-        'primary-dark': '#6d28d9',
-        secondary: '#ec4899',
-        'secondary-light': '#f472b6',
-        'secondary-dark': '#db2777',
-        accent: '#d4af37',
-        background: '#1a0a2e',
-        surface: '#2d1b4e',
-        text: '#ffffff',
-        'text-muted': '#a78bfa',
-        'header-bg': '#2d1b4e',
-        'header-text': '#ffffff',
-        'footer-bg': '#1a0a2e',
-        'footer-text': '#a78bfa',
-      },
-      borderRadius: { button: '0.5rem', card: '1rem', input: '0.5rem' },
-      font: { heading: "'Noto Serif JP', serif", body: "'Noto Sans JP', sans-serif" },
-      style: 'luxury',
-    },
-  },
 }
 
 const DEFAULT_SLUG: BrandSlug = 'idol-gakuen'
@@ -80,12 +48,12 @@ const DEFAULT_SLUG: BrandSlug = 'idol-gakuen'
 // ============================================
 
 export async function getBrandSlug(forceSlug?: string): Promise<BrandSlug> {
-  if (forceSlug === 'idol-gakuen' || forceSlug === 'hitomitsu') {
+  if (forceSlug === 'idol-gakuen') {
     return forceSlug
   }
   const h = await headers()
   const slug = h.get('x-brand-slug')
-  if (slug === 'idol-gakuen' || slug === 'hitomitsu') {
+  if (slug === 'idol-gakuen') {
     return slug
   }
   return DEFAULT_SLUG

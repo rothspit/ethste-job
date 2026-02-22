@@ -6,7 +6,7 @@ import { createContext, useContext, type ReactNode } from 'react'
 // Brand 型定義
 // ============================================
 
-export type BrandSlug = 'idol-gakuen' | 'hitomitsu'
+export type BrandSlug = 'idol-gakuen'
 export type ThemeStyle = 'pop' | 'luxury'
 
 export interface BrandThemeColors {

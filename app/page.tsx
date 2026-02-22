@@ -58,10 +58,7 @@ export default function Home() {
         </Link>
 
         {/* 💋 人妻の蜜（外部リンク） */}
-        <a href="https://h-mitsu.com" target="_blank" rel="noopener noreferrer" className="group relative overflow-hidden rounded-2xl border-4 border-purple-600 transform hover:-translate-y-2 transition-all duration-300 shadow-2xl shadow-purple-500/30">
-          <Image src="/main_mitsu.jpg" alt="人妻の蜜" fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
-          <div className="absolute inset-0 bg-gradient-to-t from-purple-900/90 via-purple-500/50 to-transparent mix-blend-multiply"></div>
-
+        <a href="https://h-mitsu.com" target="_blank" rel="noopener noreferrer" className="group relative overflow-hidden rounded-2xl border-4 border-purple-600 transform hover:-translate-y-2 transition-all duration-300 shadow-2xl shadow-purple-500/30 bg-gradient-to-t from-purple-900 via-purple-800 to-purple-700">
           <div className="relative p-8 h-80 flex flex-col items-center text-center justify-end">
             <div className="bg-purple-600 text-white text-xs font-black px-4 py-1 rounded-full mb-3 shadow-md">大人の極上癒やし</div>
 
