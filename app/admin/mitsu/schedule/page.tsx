@@ -21,6 +21,7 @@ interface Girl {
 interface Area {
   id: string
   name: string
+  slug?: string
   sort_order: number
 }
 
@@ -41,7 +42,7 @@ interface EditForm {
   start_time: string
   end_time: string
   comment: string
-  area_id: string
+  area_ids: Set<string>
 }
 
 // --- Helpers ---
@@ -60,8 +61,18 @@ function addDays(d: Date, n: number): Date {
   return r
 }
 
+// JST today string (safe on both server UTC and browser JST)
+function toJSTDate(): string {
+  return new Date(Date.now() + 9 * 60 * 60 * 1000)
+    .toISOString().slice(0, 10)
+}
+
+// Local Date → YYYY-MM-DD (browser runs in JST)
 function formatDate(d: Date): string {
-  return d.toISOString().slice(0, 10)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
 }
 
 function dayLabel(d: Date): string {
@@ -100,17 +111,17 @@ export default function MitsuSchedulePage() {
     start_time: '10:00',
     end_time: '03:00',
     comment: '',
-    area_id: '',
+    area_ids: new Set(),
   })
   const [saving, setSaving] = useState(false)
   const [brandId, setBrandId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [showWorkingOnly, setShowWorkingOnly] = useState(false)
   const [showBulk, setShowBulk] = useState(false)
-  const [bulkDate, setBulkDate] = useState(() => formatDate(new Date()))
+  const [bulkDate, setBulkDate] = useState(toJSTDate)
   const [bulkStartTime, setBulkStartTime] = useState('10:00')
   const [bulkEndTime, setBulkEndTime] = useState('03:00')
-  const [bulkAreaId, setBulkAreaId] = useState('')
+  const [bulkAreaIds, setBulkAreaIds] = useState<Set<string>>(new Set())
   const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set())
   const [bulkSearch, setBulkSearch] = useState('')
   const [bulkSaving, setBulkSaving] = useState(false)
@@ -130,7 +141,7 @@ export default function MitsuSchedulePage() {
 
   // Week dates
   const weekDates = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
-  const today = formatDate(new Date())
+  const today = toJSTDate()
 
   // Fetch girls
   useEffect(() => {
@@ -152,7 +163,7 @@ export default function MitsuSchedulePage() {
     const fetch = async () => {
       const { data } = await supabase
         .from('areas')
-        .select('*')
+        .select('id, name, slug, sort_order')
         .in('slug', ['nishifunabashi', 'kasai', 'kinshicho'])
         .order('sort_order', { ascending: true })
       if (data) setAreas(data)
@@ -183,20 +194,21 @@ export default function MitsuSchedulePage() {
   const goPrev = () => setWeekStart(addDays(weekStart, -7))
   const goNext = () => setWeekStart(addDays(weekStart, 7))
 
-  // Get schedule for a specific girl+date
-  const getSchedule = (girlId: string, date: string): ScheduleRow | undefined => {
-    return schedules.find((s) => s.girl_id === girlId && s.date === date)
+  // Get all schedule rows for a specific girl+date
+  const getSchedules = (girlId: string, date: string): ScheduleRow[] => {
+    return schedules.filter((s) => s.girl_id === girlId && s.date === date)
   }
 
   // Open cell editor
   const openEditor = (girlId: string, date: string) => {
-    const existing = getSchedule(girlId, date)
+    const existing = getSchedules(girlId, date)
+    const first = existing[0]
     setEditForm({
-      status: (existing?.status as EditForm['status']) || 'unset',
-      start_time: existing?.start_time?.slice(0, 5) || '10:00',
-      end_time: existing?.end_time?.slice(0, 5) || '03:00',
-      comment: existing?.comment || '',
-      area_id: existing?.area_id || '',
+      status: (first?.status as EditForm['status']) || 'unset',
+      start_time: first?.start_time?.slice(0, 5) || '10:00',
+      end_time: first?.end_time?.slice(0, 5) || '03:00',
+      comment: first?.comment || '',
+      area_ids: new Set(existing.map((s) => s.area_id).filter(Boolean) as string[]),
     })
     setEditingCell({ girlId, date })
   }
@@ -206,17 +218,45 @@ export default function MitsuSchedulePage() {
     if (!editingCell || !brandId) return
     setSaving(true)
     try {
-      const payload = {
-        girl_id: editingCell.girlId,
-        date: editingCell.date,
-        brand_id: brandId,
-        status: editForm.status,
-        start_time: editForm.status === 'working' ? editForm.start_time : null,
-        end_time: editForm.status === 'working' ? editForm.end_time : null,
-        comment: editForm.comment || null,
-        area_id: editForm.area_id || null,
+      const existing = getSchedules(editingCell.girlId, editingCell.date)
+
+      if (editForm.status === 'working' && editForm.area_ids.size > 0) {
+        // Upsert rows for each selected area
+        const payloads = Array.from(editForm.area_ids).map((areaId) => ({
+          girl_id: editingCell.girlId,
+          date: editingCell.date,
+          brand_id: brandId,
+          status: editForm.status,
+          start_time: editForm.start_time,
+          end_time: editForm.end_time,
+          comment: editForm.comment || null,
+          area_id: areaId,
+        }))
+        await supabase.from('schedules').upsert(payloads, { onConflict: 'girl_id,date,area_id' })
+        // Delete rows for deselected areas
+        const toDelete = existing.filter((s) => s.area_id && !editForm.area_ids.has(s.area_id))
+        if (toDelete.length > 0) {
+          await supabase.from('schedules').delete().in('id', toDelete.map((s) => s.id))
+        }
+      } else {
+        // Off / unset / working with no area: replace all with one row
+        if (existing.length > 0) {
+          await supabase.from('schedules').delete().in('id', existing.map((s) => s.id))
+        }
+        if (editForm.status !== 'unset') {
+          await supabase.from('schedules').insert({
+            girl_id: editingCell.girlId,
+            date: editingCell.date,
+            brand_id: brandId,
+            status: editForm.status,
+            start_time: editForm.status === 'working' ? editForm.start_time : null,
+            end_time: editForm.status === 'working' ? editForm.end_time : null,
+            comment: editForm.comment || null,
+            area_id: null,
+          })
+        }
       }
-      await supabase.from('schedules').upsert(payload, { onConflict: 'girl_id,date' })
+
       await fetchSchedules()
       setEditingCell(null)
     } finally {
@@ -227,9 +267,9 @@ export default function MitsuSchedulePage() {
   // Delete (reset to no record)
   const handleDelete = async () => {
     if (!editingCell) return
-    const existing = getSchedule(editingCell.girlId, editingCell.date)
-    if (existing) {
-      await supabase.from('schedules').delete().eq('id', existing.id)
+    const existing = getSchedules(editingCell.girlId, editingCell.date)
+    if (existing.length > 0) {
+      await supabase.from('schedules').delete().in('id', existing.map((s) => s.id))
       await fetchSchedules()
     }
     setEditingCell(null)
@@ -237,20 +277,22 @@ export default function MitsuSchedulePage() {
 
   // Bulk register
   const handleBulkSave = async () => {
-    if (!brandId || bulkSelected.size === 0) return
+    if (!brandId || bulkSelected.size === 0 || bulkAreaIds.size === 0) return
     setBulkSaving(true)
     try {
-      const payloads = Array.from(bulkSelected).map((girlId) => ({
-        girl_id: girlId,
-        date: bulkDate,
-        brand_id: brandId,
-        status: 'working' as const,
-        start_time: bulkStartTime,
-        end_time: bulkEndTime,
-        area_id: bulkAreaId || null,
-        comment: null,
-      }))
-      await supabase.from('schedules').upsert(payloads, { onConflict: 'girl_id,date' })
+      const payloads = Array.from(bulkSelected).flatMap((girlId) =>
+        Array.from(bulkAreaIds).map((areaId) => ({
+          girl_id: girlId,
+          date: bulkDate,
+          brand_id: brandId,
+          status: 'working' as const,
+          start_time: bulkStartTime,
+          end_time: bulkEndTime,
+          area_id: areaId,
+          comment: null,
+        }))
+      )
+      await supabase.from('schedules').upsert(payloads, { onConflict: 'girl_id,date,area_id' })
       await fetchSchedules()
       setShowBulk(false)
       setBulkSelected(new Set())
@@ -306,7 +348,7 @@ export default function MitsuSchedulePage() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => { setBulkDate(formatDate(new Date())); setBulkSelected(new Set()); setBulkSearch(''); setShowBulk(true) }}
+              onClick={() => { setBulkDate(toJSTDate()); setBulkAreaIds(new Set()); setBulkSelected(new Set()); setBulkSearch(''); setShowBulk(true) }}
               className="px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-500 rounded font-bold"
             >
               一括登録
@@ -407,32 +449,38 @@ export default function MitsuSchedulePage() {
                     {weekDates.map((d) => {
                       const dateStr = formatDate(d)
                       const isToday = dateStr === today
-                      const sched = getSchedule(girl.id, dateStr)
-                      const status = sched?.status || 'unset'
+                      const scheds = getSchedules(girl.id, dateStr)
+                      const workingScheds = scheds.filter((s) => s.status === 'working')
+                      const hasOff = scheds.some((s) => s.status === 'off')
 
                       let cellBg = ''
                       let content = <span className="text-slate-600">—</span>
-                      if (status === 'working') {
+                      if (workingScheds.length > 0) {
                         cellBg = 'bg-green-900/30'
-                        const area = areaName(sched?.area_id || null)
+                        const first = workingScheds[0]
                         content = (
                           <div className="text-[11px]">
                             <div className="text-green-400 font-bold">
-                              {formatTimeDisplay(sched?.start_time)}-{formatTimeDisplay(sched?.end_time)}
+                              {formatTimeDisplay(first.start_time)}-{formatTimeDisplay(first.end_time)}
                             </div>
-                            {area && (
-                              <span className="inline-block mt-0.5 px-1.5 py-0.5 bg-blue-900/40 text-blue-300 text-[9px] rounded">
-                                {area}
-                              </span>
-                            )}
-                            {sched?.comment && (
+                            <div className="flex flex-wrap justify-center gap-0.5 mt-0.5">
+                              {workingScheds.map((s) => {
+                                const area = areaName(s.area_id)
+                                return area ? (
+                                  <span key={s.id} className="inline-block px-1.5 py-0.5 bg-blue-900/40 text-blue-300 text-[9px] rounded">
+                                    {area}
+                                  </span>
+                                ) : null
+                              })}
+                            </div>
+                            {first.comment && (
                               <div className="text-slate-400 text-[9px] mt-0.5 truncate max-w-[80px]">
-                                {sched.comment}
+                                {first.comment}
                               </div>
                             )}
                           </div>
                         )
-                      } else if (status === 'off') {
+                      } else if (hasOff) {
                         cellBg = 'bg-red-900/20'
                         content = <span className="text-red-400 text-xs font-bold">休</span>
                       }
@@ -549,19 +597,33 @@ export default function MitsuSchedulePage() {
                   </div>
 
                   <div>
-                    <label className="text-[10px] text-slate-500 uppercase tracking-wider block mb-1">
+                    <label className="text-[10px] text-slate-500 uppercase tracking-wider block mb-2">
                       エリア
                     </label>
-                    <select
-                      value={editForm.area_id}
-                      onChange={(e) => setEditForm({ ...editForm, area_id: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm"
-                    >
-                      <option value="">未選択</option>
-                      {areas.map((a) => (
-                        <option key={a.id} value={a.id}>{a.name}</option>
-                      ))}
-                    </select>
+                    <div className="flex flex-wrap gap-2">
+                      {areas.map((a) => {
+                        const checked = editForm.area_ids.has(a.id)
+                        return (
+                          <button
+                            key={a.id}
+                            type="button"
+                            onClick={() => {
+                              const next = new Set(editForm.area_ids)
+                              if (checked) next.delete(a.id)
+                              else next.add(a.id)
+                              setEditForm({ ...editForm, area_ids: next })
+                            }}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                              checked
+                                ? 'bg-blue-600 text-white ring-1 ring-blue-400/50'
+                                : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+                            }`}
+                          >
+                            {a.name}
+                          </button>
+                        )
+                      })}
+                    </div>
                   </div>
                 </>
               )}
@@ -667,17 +729,59 @@ export default function MitsuSchedulePage() {
 
               {/* Area */}
               <div>
-                <label className="text-[10px] text-slate-500 uppercase tracking-wider block mb-1">エリア</label>
-                <select
-                  value={bulkAreaId}
-                  onChange={(e) => setBulkAreaId(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm"
-                >
-                  <option value="">未選択</option>
-                  {areas.map((a) => (
-                    <option key={a.id} value={a.id}>{a.name}</option>
-                  ))}
-                </select>
+                <label className="text-[10px] text-slate-500 uppercase tracking-wider block mb-2">エリア</label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {areas.map((a) => {
+                    const checked = bulkAreaIds.has(a.id)
+                    return (
+                      <button
+                        key={a.id}
+                        type="button"
+                        onClick={() => {
+                          setBulkAreaIds((prev) => {
+                            const next = new Set(prev)
+                            if (checked) next.delete(a.id)
+                            else next.add(a.id)
+                            return next
+                          })
+                        }}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-bold transition ${
+                          checked
+                            ? 'bg-blue-600 text-white ring-1 ring-blue-400/50'
+                            : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+                        }`}
+                      >
+                        {a.name}
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const ids = areas.filter((a) => a.slug === 'nishifunabashi' || a.slug === 'kasai').map((a) => a.id)
+                      setBulkAreaIds(new Set(ids))
+                    }}
+                    className="text-[10px] text-blue-400 hover:text-blue-300"
+                  >
+                    西船橋+葛西
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBulkAreaIds(new Set(areas.map((a) => a.id)))}
+                    className="text-[10px] text-blue-400 hover:text-blue-300"
+                  >
+                    全エリア
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBulkAreaIds(new Set())}
+                    className="text-[10px] text-slate-400 hover:text-slate-300"
+                  >
+                    クリア
+                  </button>
+                </div>
               </div>
 
               {/* Cast selection */}
@@ -740,10 +844,10 @@ export default function MitsuSchedulePage() {
               <div className="flex-1" />
               <button
                 onClick={handleBulkSave}
-                disabled={bulkSaving || bulkSelected.size === 0}
+                disabled={bulkSaving || bulkSelected.size === 0 || bulkAreaIds.size === 0}
                 className="px-6 py-2.5 text-xs font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition disabled:opacity-50"
               >
-                {bulkSaving ? '登録中...' : `${bulkSelected.size}人を一括登録`}
+                {bulkSaving ? '登録中...' : `${bulkSelected.size}人 × ${bulkAreaIds.size}エリア 一括登録`}
               </button>
             </div>
           </div>
