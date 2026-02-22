@@ -53,8 +53,8 @@ function GirlCard({ girl }: { girl: Girl }) {
           {girl.name}
         </p>
         {girl.age && <p className="text-[10px] text-[#78716c] mt-0.5">{girl.age}歳</p>}
-        {girl.catchphrase && (
-          <p className="text-[10px] text-[#78716c] mt-1 truncate">{girl.catchphrase}</p>
+        {girl.catch_copy && (
+          <p className="text-[10px] text-[#78716c] mt-1 truncate">{girl.catch_copy}</p>
         )}
       </div>
     </Link>

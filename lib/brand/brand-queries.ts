@@ -11,8 +11,8 @@ export interface Girl {
   name: string
   age?: number
   status?: string
-  profile_image_url?: string
-  catchphrase?: string
+  images?: string[] | null
+  catch_copy?: string
   is_active: boolean
   sort_order?: number
   created_at: string
@@ -188,7 +188,7 @@ export async function getDiariesByBrand(opts?: {
   const brand = await getBrand(opts?.forceSlug)
   let query = supabase
     .from('diaries')
-    .select('*, girl:girls(id, name, profile_image_url)')
+    .select('*, girl:girls(id, name, images)')
     .eq('brand_id', brand.id)
     .eq('is_published', true)
     .order('published_at', { ascending: false })
@@ -212,7 +212,7 @@ export async function getDiaryBySlug(slug: string, forceSlug?: string): Promise<
   const brand = await getBrand(forceSlug)
   const { data, error } = await supabase
     .from('diaries')
-    .select('*, girl:girls(id, name, profile_image_url)')
+    .select('*, girl:girls(id, name, images)')
     .eq('slug', slug)
     .eq('brand_id', brand.id)
     .eq('is_published', true)

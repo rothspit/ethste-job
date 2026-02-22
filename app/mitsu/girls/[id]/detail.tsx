@@ -227,8 +227,8 @@ export default function MitsuGirlDetail({
           >
             {girl.name}
           </h2>
-          {girl.catchphrase && (
-            <p className="text-[#b8860b] text-sm mt-2 tracking-wider">{girl.catchphrase}</p>
+          {girl.catch_copy && (
+            <p className="text-[#b8860b] text-sm mt-2 tracking-wider">{girl.catch_copy}</p>
           )}
 
           <div className="w-10 h-px bg-[#b8860b] my-8" />
