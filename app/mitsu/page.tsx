@@ -55,9 +55,7 @@ function ScheduleCard({ schedule }: { schedule: Schedule }) {
         <p className="text-[10px] text-[#b8860b] mt-1">
           {formatTime(schedule.start_time)} - {formatTime(schedule.end_time)}
         </p>
-        {areaName && (
-          <p className="text-[9px] text-[#78716c] mt-0.5">{areaName}</p>
-        )}
+        <p className="text-[9px] text-[#78716c] mt-0.5">{areaName || '葛西・錦糸町'}</p>
       </div>
     </div>
   )
