@@ -127,6 +127,8 @@ export async function POST(request: Request) {
           content: text,
           image_url: imageUrls[0] || null,
           videos: videoUrls.join(','),
+          published_at: new Date().toISOString(),
+          is_published: true,
         })
 
       if (insertError) {

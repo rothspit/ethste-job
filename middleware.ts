@@ -87,6 +87,8 @@ function isPassthroughPath(pathname: string): boolean {
 
 // h-mitsu.com でリライトするパスとマッピング
 const MITSU_REWRITE_MAP: [string, string][] = [
+  ['/cast',     '/mitsu/cast'],
+  ['/diary',    '/mitsu/diary'],
   ['/girls',    '/mitsu/girls'],
   ['/diaries',  '/mitsu/diaries'],
   ['/schedule', '/mitsu/schedule'],

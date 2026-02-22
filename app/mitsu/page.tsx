@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { getBrand } from '@/lib/brand/get-brand'
-import { getTodaySchedule, getDiariesByBrand, getGirlsByBrand, getPhotoDiaries } from '@/lib/brand/brand-queries'
-import type { Girl, Schedule, Diary, PhotoDiary } from '@/lib/brand/brand-queries'
+import { getTodaySchedule, getDiariesByBrand, getGirlsByBrand } from '@/lib/brand/brand-queries'
+import type { Girl, Schedule, Diary } from '@/lib/brand/brand-queries'
 import { getGirlImageUrl } from '@/lib/brand/image-utils'
 
 const SLUG = 'hitomitsu'
@@ -63,21 +63,19 @@ function ScheduleCard({ schedule }: { schedule: Schedule }) {
 
 function DiaryCard({ diary }: { diary: Diary }) {
   const girlName = diary.girl ? (diary.girl as any).name : null
+  const imageUrl = (diary as any).image_url || diary.thumbnail_url
   const date = diary.published_at
     ? new Date(diary.published_at).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })
     : ''
 
   return (
-    <Link
-      href={`/mitsu/diaries/${diary.slug}`}
-      className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition group"
-    >
-      <div className="aspect-video bg-[#f5f5f4] flex items-center justify-center overflow-hidden">
-        {diary.thumbnail_url ? (
+    <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition">
+      <div className="aspect-square bg-[#f5f5f4] flex items-center justify-center overflow-hidden">
+        {imageUrl ? (
           <img
-            src={diary.thumbnail_url}
+            src={imageUrl}
             alt={diary.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover"
           />
         ) : (
           <span className="text-2xl opacity-15">📝</span>
@@ -89,27 +87,8 @@ function DiaryCard({ diary }: { diary: Diary }) {
           {girlName && <p className="text-[10px] text-[#b8860b]">{girlName}</p>}
           <p className="text-[10px] text-[#78716c] ml-auto">{date}</p>
         </div>
-      </div>
-    </Link>
-  )
-}
-
-function PhotoDiaryCard({ diary }: { diary: PhotoDiary }) {
-  const girlName = diary.girl?.name || '—'
-  const date = new Date(diary.published_at).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })
-
-  return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition">
-      <div className="aspect-square bg-[#f5f5f4] overflow-hidden">
-        <img src={diary.image_url} alt={`${girlName}の写メ日記`} className="w-full h-full object-cover" />
-      </div>
-      <div className="p-3">
-        <div className="flex items-center justify-between mb-1">
-          <p className="text-[10px] text-[#b8860b]">{girlName}</p>
-          <p className="text-[10px] text-[#78716c]">{date}</p>
-        </div>
-        {diary.comment && (
-          <p className="text-[10px] text-[#44403c] leading-relaxed line-clamp-2">{diary.comment}</p>
+        {diary.content && (
+          <p className="text-[10px] text-[#44403c] leading-relaxed line-clamp-2 mt-1.5">{diary.content}</p>
         )}
       </div>
     </div>
@@ -153,12 +132,11 @@ function GirlCard({ girl }: { girl: Girl }) {
 // ============================================
 
 export default async function MitsuPage() {
-  const [brand, schedules, diaries, girls, photoDiaries] = await Promise.all([
+  const [brand, schedules, diaries, girls] = await Promise.all([
     getBrand(SLUG),
     getTodaySchedule(SLUG),
-    getDiariesByBrand({ limit: 6, forceSlug: SLUG }),
+    getDiariesByBrand({ limit: 8, forceSlug: SLUG }),
     getGirlsByBrand({ limit: 12, forceSlug: SLUG }),
-    getPhotoDiaries({ limit: 3, forceSlug: SLUG }),
   ])
 
   const jsonLd = {
@@ -264,11 +242,11 @@ export default async function MitsuPage() {
       <section className="py-16">
         <div className="max-w-2xl mx-auto px-4">
           <SectionHeading>写メ日記</SectionHeading>
-          {photoDiaries.length > 0 ? (
+          {diaries.length > 0 ? (
             <>
               <div className="grid grid-cols-2 gap-4">
-                {photoDiaries.map((d) => (
-                  <PhotoDiaryCard key={d.id} diary={d} />
+                {diaries.map((d) => (
+                  <DiaryCard key={d.id} diary={d} />
                 ))}
               </div>
               <div className="mt-10 text-center">
@@ -299,7 +277,7 @@ export default async function MitsuPage() {
               </div>
               <div className="mt-10 text-center">
                 <Link
-                  href="/mitsu/girls"
+                  href="/mitsu/cast"
                   className="inline-block border border-[#b8860b]/30 text-[#b8860b] text-xs px-8 py-3 tracking-[0.15em] hover:bg-[#b8860b]/5 transition"
                 >
                   すべて見る
@@ -353,7 +331,7 @@ export default async function MitsuPage() {
             <span className="text-[9px] tracking-wider mt-0.5">出勤情報</span>
           </Link>
           <Link
-            href="/mitsu/girls"
+            href="/mitsu/cast"
             className="flex-1 flex flex-col items-center justify-center py-3 text-[#78716c] hover:text-[#b8860b] transition"
           >
             <span className="text-base">👤</span>
