@@ -95,6 +95,21 @@ export async function getGirlsByBrand(opts?: {
   return (data ?? []) as Girl[]
 }
 
+export async function getGirlsCount(forceSlug?: string): Promise<number> {
+  const brand = await getBrand(forceSlug)
+  const { count, error } = await supabase
+    .from('girls')
+    .select('*', { count: 'exact', head: true })
+    .eq('brand_id', brand.id)
+    .eq('is_active', true)
+
+  if (error) {
+    console.error('[getGirlsCount]', error.message)
+    return 0
+  }
+  return count ?? 0
+}
+
 export async function getGirlById(id: string, forceSlug?: string): Promise<Girl | null> {
   const brand = await getBrand(forceSlug)
   const { data, error } = await supabase

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getBrand } from '@/lib/brand/get-brand'
-import { getTodaySchedule, getDiariesByBrand, getGirlsByBrand } from '@/lib/brand/brand-queries'
+import { getTodaySchedule, getDiariesByBrand, getGirlsByBrand, getGirlsCount } from '@/lib/brand/brand-queries'
 import type { Girl, Schedule, Diary } from '@/lib/brand/brand-queries'
 import { getGirlImageUrl } from '@/lib/brand/image-utils'
 
@@ -132,11 +132,12 @@ function GirlCard({ girl }: { girl: Girl }) {
 // ============================================
 
 export default async function MitsuPage() {
-  const [brand, schedules, diaries, girls] = await Promise.all([
+  const [brand, schedules, diaries, girls, girlsCount] = await Promise.all([
     getBrand(SLUG),
     getTodaySchedule(SLUG),
     getDiariesByBrand({ limit: 8, forceSlug: SLUG }),
     getGirlsByBrand({ limit: 12, forceSlug: SLUG }),
+    getGirlsCount(SLUG),
   ])
 
   const jsonLd = {
@@ -269,7 +270,7 @@ export default async function MitsuPage() {
       <section className="py-16 bg-[#fafaf9]">
         <div className="max-w-2xl mx-auto px-4">
           <SectionHeading>在籍キャスト</SectionHeading>
-          <p className="text-center text-[#b8860b] text-sm tracking-wider mb-6">在籍 {girls.length}名</p>
+          <p className="text-center text-[#b8860b] text-sm tracking-wider mb-6">在籍 {girlsCount}名</p>
           {girls.length > 0 ? (
             <>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
