@@ -83,8 +83,11 @@ export default async function MitsuCastPage() {
       </header>
 
       <div className="max-w-2xl mx-auto px-4 py-12">
-        <p className="text-center text-[#a8a29e] text-xs tracking-wider mb-10">
+        <p className="text-center text-[#a8a29e] text-xs tracking-wider mb-2">
           {brand.name}｜{brand.area || ''}
+        </p>
+        <p className="text-center text-[#b8860b] text-sm tracking-wider mb-10">
+          在籍 {girls.length}名
         </p>
 
         {girls.length > 0 ? (
