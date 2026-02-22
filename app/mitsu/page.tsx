@@ -226,6 +226,7 @@ export default async function MitsuPage() {
       <section className="py-16 bg-[#fafaf9]">
         <div className="max-w-2xl mx-auto px-4">
           <SectionHeading>本日の出勤</SectionHeading>
+          <p className="text-center text-[#b8860b] text-sm tracking-wider mb-6">{schedules.length}名</p>
           {schedules.length > 0 ? (
             <div className="grid grid-cols-3 gap-3">
               {schedules.map((s) => (
@@ -270,6 +271,7 @@ export default async function MitsuPage() {
       <section className="py-16 bg-[#fafaf9]">
         <div className="max-w-2xl mx-auto px-4">
           <SectionHeading>在籍キャスト</SectionHeading>
+          <p className="text-center text-[#b8860b] text-sm tracking-wider mb-6">在籍 {girls.length}名</p>
           {girls.length > 0 ? (
             <>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
