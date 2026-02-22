@@ -5,6 +5,8 @@ import { getGirlsByBrand } from '@/lib/brand/brand-queries'
 import type { Girl } from '@/lib/brand/brand-queries'
 import { getGirlImageUrl } from '@/lib/brand/image-utils'
 
+export const revalidate = 60
+
 const SLUG = 'hitomitsu'
 const serif = "var(--font-noto-serif), 'Noto Serif JP', serif"
 
