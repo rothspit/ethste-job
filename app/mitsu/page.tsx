@@ -40,7 +40,7 @@ function ScheduleCard({ schedule }: { schedule: Schedule }) {
   const areaName = schedule.area?.name
 
   return (
-    <div className="flex-shrink-0 w-36 bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition">
+    <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition">
       <div className="aspect-[3/4] bg-[#f5f5f4] flex items-center justify-center overflow-hidden">
         {imageUrl ? (
           <img src={imageUrl} alt={girl?.name || ''} className="w-full h-full object-cover" />
@@ -227,7 +227,7 @@ export default async function MitsuPage() {
         <div className="max-w-2xl mx-auto px-4">
           <SectionHeading>本日の出勤</SectionHeading>
           {schedules.length > 0 ? (
-            <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4">
+            <div className="grid grid-cols-3 gap-3">
               {schedules.map((s) => (
                 <ScheduleCard key={s.id} schedule={s} />
               ))}
