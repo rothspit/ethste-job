@@ -4,6 +4,8 @@ import { getTodaySchedule, getDiariesByBrand, getGirlsByBrand } from '@/lib/bran
 import type { Girl, Schedule, Diary } from '@/lib/brand/brand-queries'
 import { getGirlImageUrl } from '@/lib/brand/image-utils'
 
+export const revalidate = 60
+
 const SLUG = 'hitomitsu'
 const serif = "var(--font-noto-serif), 'Noto Serif JP', serif"
 
