@@ -14,14 +14,7 @@ function toDateStr(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-function tabLabel(d: Date, i: number) {
-  if (i === 0) return '今日'
-  if (i === 1) return '明日'
-  return `${d.getMonth() + 1}/${d.getDate()}`
-}
-
 export default function SchedulePage() {
-  // 7日分の日付
   const [tabs] = useState(() => {
     const arr: Date[] = []
     for (let i = 0; i < 7; i++) {
@@ -36,11 +29,29 @@ export default function SchedulePage() {
   const [selected, setSelected] = useState(0)
   const [casts, setCasts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [active, setActive] = useState<boolean | null>(null) // null=読み込み中
 
   const dateStr = toDateStr(tabs[selected])
 
-  // 日付が変わるたびにスケジュール取得
+  // ページ有効/無効チェック
   useEffect(() => {
+    supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'schedule_page')
+      .single()
+      .then(({ data, error }) => {
+        if (error || !data) {
+          setActive(false) // テーブル未作成 or 設定なし → 停止扱い
+        } else {
+          setActive(data.value?.active ?? false)
+        }
+      })
+  }, [])
+
+  // スケジュール取得（アクティブ時のみ）
+  useEffect(() => {
+    if (!active) return
     let ignore = false
     setLoading(true)
     supabase
@@ -56,22 +67,53 @@ export default function SchedulePage() {
         }
       })
     return () => { ignore = true }
-  }, [dateStr])
+  }, [dateStr, active])
 
   const img = (g: any) => g.images?.[0] || g.image1_url || null
   const time = (t: string | null) => t ? t.substring(0, 5) : '--:--'
 
+  // 読み込み中
+  if (active === null) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-pink-200 border-t-pink-500 rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  // 停止中
+  if (!active) {
+    return (
+      <div className="min-h-screen bg-slate-50 pb-28">
+        <div className="bg-pink-600 text-white px-4 py-3 flex items-center justify-between">
+          <Link href="/funabashi" className="text-sm font-bold">&#8592; トップ</Link>
+          <h1 className="text-lg font-black">出勤スケジュール</h1>
+          <div className="w-12" />
+        </div>
+        <div className="flex flex-col items-center justify-center py-32 px-4">
+          <p className="text-5xl mb-4">&#x1F527;</p>
+          <p className="text-lg font-black text-slate-700 mb-2">現在準備中です</p>
+          <p className="text-sm text-slate-400 text-center">出勤スケジュール機能は現在メンテナンス中です。<br />しばらくお待ちください。</p>
+          <Link href="/funabashi" className="mt-8 bg-pink-500 text-white font-bold px-6 py-3 rounded-full shadow active:scale-95 transition-transform">
+            トップに戻る
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // アクティブ時
   return (
     <div className="min-h-screen bg-slate-50 pb-28">
 
-      {/* ===== ヘッダー ===== */}
+      {/* ヘッダー */}
       <div className="bg-pink-600 text-white px-4 py-3 flex items-center justify-between">
-        <Link href="/funabashi" className="text-sm font-bold">← トップ</Link>
+        <Link href="/funabashi" className="text-sm font-bold">&#8592; トップ</Link>
         <h1 className="text-lg font-black">出勤スケジュール</h1>
         <div className="w-12" />
       </div>
 
-      {/* ===== 日付タブ（横並び） ===== */}
+      {/* 日付タブ（横並び） */}
       <div className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
         <div className="flex">
           {tabs.map((d, i) => (
@@ -84,7 +126,9 @@ export default function SchedulePage() {
                   : 'text-slate-600 hover:bg-pink-50'
               }`}
             >
-              <div className="text-[10px] font-bold">{tabLabel(d, i)}</div>
+              <div className="text-[10px] font-bold">
+                {i === 0 ? '今日' : i === 1 ? '明日' : `${d.getMonth() + 1}/${d.getDate()}`}
+              </div>
               <div className={`text-xs font-black ${
                 i === selected
                   ? ''
@@ -97,10 +141,8 @@ export default function SchedulePage() {
         </div>
       </div>
 
-      {/* ===== キャスト一覧 ===== */}
+      {/* キャスト一覧 */}
       <div className="max-w-2xl mx-auto px-3 py-4">
-
-        {/* 日付表示 */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm font-bold text-slate-600">
             {tabs[selected].toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' })}
@@ -119,7 +161,7 @@ export default function SchedulePage() {
           </div>
         ) : casts.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-2xl border border-slate-100">
-            <p className="text-3xl mb-2">😴</p>
+            <p className="text-3xl mb-2">&#x1F634;</p>
             <p className="text-sm text-slate-400 font-bold">この日の出勤情報はまだありません</p>
           </div>
         ) : (
@@ -132,7 +174,6 @@ export default function SchedulePage() {
                   href={`/girls/${g.id}`}
                   className="flex items-center gap-3 bg-white rounded-xl p-3 border border-slate-100 shadow-sm active:scale-[0.98] transition-transform"
                 >
-                  {/* 画像 */}
                   <div className="w-16 h-16 rounded-full overflow-hidden bg-slate-200 shrink-0 border-2 border-white shadow">
                     {img(g) ? (
                       <img src={img(g)} alt={g.name} className="w-full h-full object-cover" />
@@ -140,8 +181,6 @@ export default function SchedulePage() {
                       <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400">No Img</div>
                     )}
                   </div>
-
-                  {/* 名前・時間 */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-black text-base text-slate-800 truncate">{g.name}</span>
@@ -153,8 +192,6 @@ export default function SchedulePage() {
                       </span>
                     </div>
                   </div>
-
-                  {/* 詳細 */}
                   <div className="bg-pink-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shrink-0">
                     詳細
                   </div>
@@ -171,7 +208,7 @@ export default function SchedulePage() {
         </div>
       </div>
 
-      {/* ===== 追尾フッター ===== */}
+      {/* 追尾フッター */}
       <div className="fixed bottom-0 left-0 w-full z-50 pointer-events-none">
         <div className="absolute inset-0 bg-white/80 backdrop-blur-md border-t border-slate-200" />
         <div className="max-w-xl mx-auto relative pointer-events-auto px-4 py-3 flex gap-3">
@@ -180,7 +217,7 @@ export default function SchedulePage() {
             <span className="text-base font-black leading-none">050-1745-9665</span>
           </a>
           <Link href="/chat" className="flex-1 bg-pink-500 text-white rounded-full flex items-center justify-center gap-2 py-2 shadow active:scale-95 transition-transform">
-            <span className="text-xl">💬</span>
+            <span className="text-xl">&#x1F4AC;</span>
             <span className="font-black">今すぐ指名</span>
           </Link>
         </div>

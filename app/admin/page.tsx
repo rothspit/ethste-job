@@ -109,12 +109,26 @@ export default function AdminPage() {
   const [diaryImage, setDiaryImage] = useState<File | null>(null)
   const [diaryVideo, setDiaryVideo] = useState<File | null>(null)
 
+  // スケジュールページ有効/無効
+  const [scheduleActive, setScheduleActive] = useState<boolean | null>(null)
+
   useEffect(() => {
     fetchChatSessions()
     fetchDiaries()
+    fetchScheduleSetting()
     const interval = setInterval(() => { fetchChatSessions() }, 5000)
     return () => clearInterval(interval)
   }, [])
+
+  const fetchScheduleSetting = async () => {
+    const { data } = await supabase.from('site_settings').select('value').eq('key', 'schedule_page').single()
+    setScheduleActive(data?.value?.active ?? false)
+  }
+
+  const toggleSchedulePage = async (newActive: boolean) => {
+    setScheduleActive(newActive)
+    await supabase.from('site_settings').upsert({ key: 'schedule_page', value: { active: newActive }, updated_at: new Date().toISOString() })
+  }
 
   // ブランドID解決
   useEffect(() => {
@@ -356,6 +370,44 @@ export default function AdminPage() {
       </header>
 
       <div className="max-w-6xl mx-auto p-2 md:p-4">
+        {/* スケジュールページ ON/OFF */}
+        <div className="bg-white rounded-xl shadow mb-3 p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-slate-700">📅 スケジュールページ</span>
+            {scheduleActive === null ? (
+              <span className="text-xs text-slate-400">読込中...</span>
+            ) : scheduleActive ? (
+              <span className="text-xs font-bold text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">アクティブ</span>
+            ) : (
+              <span className="text-xs font-bold text-red-500 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">停止中</span>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => toggleSchedulePage(true)}
+              disabled={scheduleActive === true}
+              className={`text-xs font-bold px-4 py-2 rounded-lg transition-colors ${
+                scheduleActive === true
+                  ? 'bg-green-500 text-white cursor-default'
+                  : 'bg-slate-100 text-slate-600 hover:bg-green-100 border border-slate-200'
+              }`}
+            >
+              アクティブ
+            </button>
+            <button
+              onClick={() => toggleSchedulePage(false)}
+              disabled={scheduleActive === false}
+              className={`text-xs font-bold px-4 py-2 rounded-lg transition-colors ${
+                scheduleActive === false
+                  ? 'bg-red-500 text-white cursor-default'
+                  : 'bg-slate-100 text-slate-600 hover:bg-red-100 border border-slate-200'
+              }`}
+            >
+              停止
+            </button>
+          </div>
+        </div>
+
         {/* ブランド切り替え */}
         <div className="flex bg-white rounded-xl shadow mb-3 overflow-hidden">
           {BRAND_OPTIONS.map((b) => (
