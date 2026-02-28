@@ -76,11 +76,17 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === 'delete') {
-      const { error: deleteError } = await supabase
+      let deleteQuery = supabase
         .from('schedules')
         .delete()
         .eq('girl_id', girl.id)
         .eq('date', schedule_date)
+      if (area_id) {
+        deleteQuery = deleteQuery.eq('area_id', area_id)
+      } else {
+        deleteQuery = deleteQuery.is('area_id', null)
+      }
+      const { error: deleteError } = await deleteQuery
 
       if (deleteError) {
         console.error('sync-schedule delete error:', deleteError)
@@ -94,6 +100,7 @@ export async function POST(req: NextRequest) {
     const scheduleData: Record<string, unknown> = {
       girl_id: girl.id,
       date: schedule_date,
+      area_id: area_id || null,
       brand_id: brandId,
       status: status || 'working',
       start_time: start_time || null,
@@ -102,7 +109,7 @@ export async function POST(req: NextRequest) {
 
     const { error: upsertError } = await supabase
       .from('schedules')
-      .upsert(scheduleData, { onConflict: 'girl_id,date' })
+      .upsert(scheduleData, { onConflict: 'girl_id,date,area_id' })
 
     if (upsertError) {
       console.error('sync-schedule upsert error:', upsertError)
