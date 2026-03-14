@@ -13,6 +13,8 @@ export default function ScheduleSection() {
     const week = ['日', '月', '火', '水', '木', '金', '土']
     for (let i = 0; i < 7; i++) {
       const d = new Date()
+      // 営業日基準（朝8時切替）にするため、現在時刻から8時間マイナスして日付を計算
+      d.setHours(d.getHours() - 8)
       d.setDate(d.getDate() + i)
       const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
       
