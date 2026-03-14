@@ -50,14 +50,18 @@ export default async function GirlsListPage() {
                 className="relative aspect-[3/4] bg-slate-200 cursor-pointer overflow-hidden group block"
               >
                 {imageUrl ? (
-                  <Image 
-                    src={imageUrl} 
-                    alt={girl.name}
-                    fill
-                    quality={95}
-                    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
+                  imageUrl.includes('placehold.co') || imageUrl.endsWith('.svg') ? (
+                    <img src={imageUrl} alt={girl.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  ) : (
+                    <Image 
+                      src={imageUrl} 
+                      alt={girl.name}
+                      fill
+                      quality={95}
+                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                  )
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs">No Img</div>
                 )}

@@ -126,14 +126,18 @@ export default function ScheduleSection() {
             >
               {/* 背景画像 */}
               {imageUrl ? (
-                <Image 
-                  src={imageUrl} 
-                  alt={girl.name} 
-                  fill
-                  quality={95}
-                  priority={true}
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
+                imageUrl.includes('placehold.co') || imageUrl.endsWith('.svg') ? (
+                  <img src={imageUrl} alt={girl.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                ) : (
+                  <Image 
+                    src={imageUrl} 
+                    alt={girl.name} 
+                    fill
+                    quality={95}
+                    priority={true}
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                )
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-xs text-pink-300 bg-gradient-to-br from-pink-50 to-white font-bold">No Image</div>
               )}
