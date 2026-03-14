@@ -1,15 +1,9 @@
 'use client'
 import { useState, useEffect } from 'react'
 
-import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import ReviewForm from '@/components/ReviewForm'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 export default function GirlDetailPage() {
   const params = useParams()
@@ -23,48 +17,44 @@ export default function GirlDetailPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      // 1. この女の子の情報を取得
-      const { data: currentGirl } = await supabase
-        .from('girls')
-        .select('*')
-        .eq('id', params.id)
-        .single()
+      try {
+        const res = await fetch('https://crm.h-mitsu.com/api/idol/casts?store_id=2', { cache: 'no-store' });
+        const data = await res.json();
+        // 一覧データの中から、URLのパラメータ(params.id)と一致するキャストを抽出
+        const currentGirl = data.casts ? data.casts.find((c: any) => c.id.toString() === params.id) : null;
 
-      if (currentGirl) {
-        setGirl(currentGirl)
+        if (currentGirl) {
+          setGirl(currentGirl);
 
-        // 2. ページタイトルを動的に変更 (SEO対策: ブラウザのタブ名が変わります)
-        document.title = `${currentGirl.name} (${currentGirl.age}) | 船橋デリヘル アイドル学園`
+          // 2. ページタイトルを動的に変更 (SEO対策: ブラウザのタブ名が変わります)
+          document.title = `${currentGirl?.name || 'キャスト'} | 船橋デリヘル アイドル学園`;
 
-        // 2.5 この女の子の日記を取得
-        const { data: diaryData } = await supabase
-          .from('diaries')
-          .select('*')
-          .eq('girl_id', params.id)
-          .order('created_at', { ascending: false })
+          // 2.5 この女の子の日記を取得
+          try {
+            const diariesRes = await fetch('https://crm.h-mitsu.com/api/idol/diaries?store_id=2&limit=50', { cache: 'no-store' });
+            const diariesData = await diariesRes.json();
+            if (diariesData.diaries) {
+              const myDiaries = diariesData.diaries.filter((d: any) => d.cast_id.toString() === params.id);
+              setDiaries(myDiaries);
+            }
+          } catch (e) {
+            console.error('Failed to fetch diaries', e);
+          }
 
-        if (diaryData) setDiaries(diaryData)
+          // 2.6 この女の子の口コミを取得 (API未実装のため空)
+          setReviews([]);
 
-        // 2.6 この女の子の口コミを取得
-        const { data: reviewData } = await supabase
-          .from('reviews')
-          .select('*')
-          .eq('girl_id', params.id)
-          .order('created_at', { ascending: false })
-
-        if (reviewData) setReviews(reviewData)
-
-        // 3. 「他の子はいないかな？」を防ぐための関連キャスト取得
-        // (自分以外で、出勤中の子 または ランキング上位の子を3人取得)
-        const { data: others } = await supabase
-          .from('girls')
-          .select('*')
-          .neq('id', params.id) // 自分以外
-          .limit(3)
-
-        if (others) setRelatedGirls(others)
+          // 3. 関連キャスト取得
+          if (data.casts) {
+            const others = data.casts.filter((c: any) => c.id.toString() !== params.id).slice(0, 3);
+            setRelatedGirls(others);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch girl data', err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false)
     }
     fetchData()
   }, [params.id])
@@ -80,7 +70,13 @@ export default function GirlDetailPage() {
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-400">読み込み中...</div>
   if (!girl) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-400">データが見つかりません</div>
 
-  const allImages = (girl.images && girl.images.length > 0) ? girl.images : (girl.idol_image_path ? [girl.idol_image_path] : (girl.image1_url ? [girl.image1_url] : []))
+  const allImages = [];
+  if (girl.idol_image_path) allImages.push(girl.idol_image_path);
+  else if (girl.image) allImages.push(girl.image);
+
+  if (girl.gallery_images && Array.isArray(girl.gallery_images)) {
+    allImages.push(...girl.gallery_images);
+  }
 
   const goToSlide = (index: number) => {
     if (index < 0) setCurrentSlide(allImages.length - 1)
