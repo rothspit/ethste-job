@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Noto_Sans_JP } from 'next/font/google'
 import { createClient } from '@supabase/supabase-js'
 import ScheduleSection from '@/components/ScheduleSection'
+import SuperPickupSection from '@/components/SuperPickupSection'
 import RankingSection from '@/components/RankingSection'
 import PriceListIdol from '@/components/PriceListIdol'
 import CardPayment from '@/components/CardPayment'
@@ -184,6 +185,9 @@ export default function FunabashiPage() {
           </div>
         </div>
       </div>
+
+      {/* 超目玉キャスト（該当者がいる場合のみ表示） */}
+      <SuperPickupSection />
 
       {/* 出勤スケジュール */}
       <div className="pt-4">
