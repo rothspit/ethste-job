@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, notFound } from 'next/navigation'
 import ReviewForm from '@/components/ReviewForm'
 
 export default function GirlDetailPage() {
@@ -31,7 +31,7 @@ export default function GirlDetailPage() {
 
           // 2.5 この女の子の日記を取得
           try {
-            const diariesRes = await fetch('https://crm.h-mitsu.com/api/idol/diaries?store_id=2&limit=50', { cache: 'no-store' });
+            const diariesRes = await fetch('https://crm.h-mitsu.com/api/idol/diaries?store_id=2', { cache: 'no-store' });
             const diariesData = await diariesRes.json();
             if (diariesData.diaries) {
               const myDiaries = diariesData.diaries.filter((d: any) => d.cast_id.toString() === params.id);
@@ -68,14 +68,15 @@ export default function GirlDetailPage() {
   }
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-400">読み込み中...</div>
-  if (!girl) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-400">データが見つかりません</div>
+  if (!girl) return notFound()
 
   const allImages = [];
   if (girl.idol_image_path) allImages.push(girl.idol_image_path);
   else if (girl.image) allImages.push(girl.image);
 
-  if (girl.gallery_images && Array.isArray(girl.gallery_images)) {
-    allImages.push(...girl.gallery_images);
+  const gallery = typeof girl.gallery_images === 'string' ? JSON.parse(girl.gallery_images || '[]') : (girl.gallery_images || []);
+  if (Array.isArray(gallery)) {
+    allImages.push(...gallery);
   }
 
   const goToSlide = (index: number) => {
