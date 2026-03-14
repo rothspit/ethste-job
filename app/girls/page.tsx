@@ -1,12 +1,15 @@
 import Link from 'next/link'
 import Image from 'next/image'
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 import { Noto_Sans_JP } from 'next/font/google'
 
 const baseFont = Noto_Sans_JP({ weight: ['700'], subsets: ['latin'], preload: false })
 
 async function getGirls() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_CRM_API_URL}/idol/casts?store_id=2`, {
-    next: { revalidate: 60 } // 60秒キャッシュ（1分ごとに更新）
+    cache: 'no-store' // キャッシュを無効化（常に最新を取得）
   })
   
   if (!res.ok) {
