@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap');
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -94,6 +94,10 @@ body {
 /* ============================================
    Shared Utilities
    ============================================ */
+.font-rounded {
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+}
+
 .divider-gold {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--color-secondary, #d4a017), transparent);

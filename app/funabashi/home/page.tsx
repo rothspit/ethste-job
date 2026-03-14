@@ -4,7 +4,6 @@ import { Noto_Sans_JP } from 'next/font/google'
 import ScheduleSection from '@/components/ScheduleSection'
 import RankingSection from '@/components/RankingSection'
 import PriceListIdol from '@/components/PriceListIdol'
-import UpdateNotice from '@/components/UpdateNotice'
 import CardPayment from '@/components/CardPayment'
 import DiarySection from '@/components/DiarySection'
 
@@ -35,8 +34,6 @@ export default function HomeContentPage() {
           </div>
         </div>
       </div>
-
-      <UpdateNotice />
 
       {/* 2. メインコンテンツ（画像は削除し、いきなり女の子！） */}
       <div className="pt-4">

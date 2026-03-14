@@ -10,29 +10,20 @@ const baseFont = Noto_Sans_JP({
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-slate-900 text-white">
+    <main className="min-h-screen bg-pink-50 text-slate-800">
       {/* 1. ロゴエリア */}
-      <div className="py-12 text-center bg-gradient-to-b from-slate-800 to-slate-900 border-b border-slate-700 relative overflow-hidden">
+      <div className="py-12 text-center bg-gradient-to-b from-white to-pink-50 border-b border-pink-100 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <Image src="/main_idol.jpg" alt="background" fill className="object-cover blur-sm" />
         </div>
 
         <div className="relative z-10">
-          <h1 className={`${baseFont.className} text-5xl md:text-7xl mb-2 text-white font-black tracking-wider drop-shadow-xl`}>
-            アイドル<span className="text-pink-500">学園</span>
+          <h1 className={`${baseFont.className} text-5xl md:text-7xl mb-2 text-pink-600 font-black tracking-wider drop-shadow-sm`}>
+            アイドル<span className="text-pink-400">学園</span>
           </h1>
-          <p className={`${baseFont.className} text-slate-400 text-xs font-bold tracking-[0.3em] uppercase`}>
+          <p className={`${baseFont.className} text-pink-300 text-xs font-bold tracking-[0.3em] uppercase`}>
             GROUP OFFICIAL PORTAL
           </p>
-
-          <div className="mt-8 flex justify-center gap-4 px-4">
-            <Link href="/login" className="bg-pink-600 hover:bg-pink-500 text-white font-bold px-6 py-3 rounded-full shadow-lg shadow-pink-900/50 flex items-center gap-2 transition-transform active:scale-95">
-               🔑 共通ログイン
-            </Link>
-            <Link href="/chat" className="bg-green-600 hover:bg-green-500 text-white font-bold px-6 py-3 rounded-full shadow-lg shadow-green-900/50 flex items-center gap-2 transition-transform active:scale-95">
-               💬 総合受付
-            </Link>
-          </div>
         </div>
       </div>
 
@@ -75,17 +66,17 @@ export default function Home() {
 
       {/* 3. 準備中エリア */}
       <div className="max-w-4xl mx-auto px-6 py-16">
-        <div className="bg-slate-800/80 border border-slate-700 rounded-3xl p-8 text-center backdrop-blur relative overflow-hidden shadow-xl">
-          <div className="absolute top-0 right-0 bg-yellow-500 text-slate-900 text-[10px] font-black px-8 py-1 transform rotate-45 translate-x-6 translate-y-3 shadow-lg">COMING SOON</div>
-          <h3 className="text-2xl font-bold text-white mb-6">🚧 新店舗オープン準備中</h3>
+        <div className="bg-white border border-pink-200 rounded-3xl p-8 text-center backdrop-blur relative overflow-hidden shadow-xl">
+          <div className="absolute top-0 right-0 bg-yellow-400 text-slate-900 text-[10px] font-black px-8 py-1 transform rotate-45 translate-x-6 translate-y-3 shadow-sm">COMING SOON</div>
+          <h3 className="text-2xl font-bold text-pink-600 mb-6">🚧 新店舗オープン準備中</h3>
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-slate-900/80 p-5 rounded-2xl border border-purple-500/50 flex items-center justify-between shadow-inner">
-              <div className="text-left"><span className="text-sm text-purple-400 font-bold block mb-1">人妻の蜜</span><span className="text-xl font-black text-white">錦糸町店</span></div>
-              <span className="text-xs bg-purple-600 text-white px-3 py-1 rounded-full animate-pulse">準備中...</span>
+            <div className="bg-pink-50 p-5 rounded-2xl border border-purple-200 flex items-center justify-between shadow-sm">
+              <div className="text-left"><span className="text-sm text-purple-500 font-bold block mb-1">人妻の蜜</span><span className="text-xl font-black text-slate-800">錦糸町店</span></div>
+              <span className="text-xs bg-purple-500 text-white px-3 py-1 rounded-full animate-pulse">準備中...</span>
             </div>
-            <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-700 flex items-center justify-between opacity-70">
-              <div className="text-left"><span className="text-sm text-slate-500 font-bold block mb-1">エリア拡大予定</span><span className="text-xl font-black text-slate-400">秋葉原・幕張</span></div>
-              <span className="text-xs text-slate-600 border border-slate-600 px-3 py-1 rounded-full">計画中</span>
+            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex items-center justify-between opacity-70">
+              <div className="text-left"><span className="text-sm text-slate-500 font-bold block mb-1">エリア拡大予定</span><span className="text-xl font-black text-slate-700">秋葉原・幕張</span></div>
+              <span className="text-xs text-slate-600 border border-slate-300 px-3 py-1 rounded-full bg-white">計画中</span>
             </div>
           </div>
         </div>
