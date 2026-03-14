@@ -1,39 +1,30 @@
-'use client'
-import { useState, useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Noto_Sans_JP } from 'next/font/google'
 
 const baseFont = Noto_Sans_JP({ weight: ['700'], subsets: ['latin'], preload: false })
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
-export default function GirlsListPage() {
-  const [girls, setGirls] = useState<any[]>([])
-
-  useEffect(() => {
-    const fetchGirls = async () => {
-      // 全員取得（ランキング順）
-      const { data } = await supabase
-        .from('girls')
-        .select('*')
-        .order('ranking_order', { ascending: true })
-        .order('id', { ascending: true })
-
-      if (data) setGirls(data)
-    }
-    fetchGirls()
-  }, [])
-
-  // 画像URLを取得するヘルパー関数
-  const getImageUrl = (girl: any) => {
-    if (girl.images && girl.images[0]) return girl.images[0]
-    if (girl.image1_url) return girl.image1_url
-    return null
+async function getGirls() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_CRM_API_URL}/idol/casts?store_id=2`, {
+    next: { revalidate: 60 } // 60秒キャッシュ（1分ごとに更新）
+  })
+  
+  if (!res.ok) {
+    console.error('Failed to fetch girls from CRM')
+    return []
   }
+
+  const json = await res.json()
+  return json.casts || []
+}
+
+export default async function GirlsListPage() {
+  const girls = await getGirls()
+
+  // CRM APIからのデータ構造に合わせて調整
+  const getImageUrl = (girl: any) => girl.image || null
+  const getStatusText = (girl: any) => girl.status === '接客中' ? '💕 接客中' : girl.status === '待機中' || girl.status === '即案内可能' || !!girl.is_attending ? '✨ 即ご案内可能' : '💤 お休み中'
+  const isAttending = (girl: any) => girl.status !== 'お休み中' && girl.status !== '退店'
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
@@ -49,8 +40,8 @@ export default function GirlsListPage() {
         </p>
 
         {/* グリッド表示（全員） */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
-          {girls.map((girl) => {
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1">
+          {girls.map((girl: any) => {
             const imageUrl = getImageUrl(girl)
             return (
               <Link
@@ -59,21 +50,28 @@ export default function GirlsListPage() {
                 className="relative aspect-[3/4] bg-slate-200 cursor-pointer overflow-hidden group block"
               >
                 {imageUrl ? (
-                  <img src={imageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"/>
+                  <Image 
+                    src={imageUrl} 
+                    alt={girl.name}
+                    fill
+                    quality={95}
+                    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs">No Img</div>
                 )}
 
                 {/* 出勤中の子だけバッジをつける */}
-                {girl.is_attending && (
+                {isAttending(girl) && (
                   <div className="absolute top-0 left-0">
                      <span className="bg-[#ff0066] text-white text-[10px] font-bold px-2 py-1 shadow-md inline-block animate-pulse">本日出勤</span>
                   </div>
                 )}
 
-                <div className="absolute bottom-0 w-full bg-black/70 backdrop-blur-[2px] p-1.5 text-white">
-                  <p className="font-bold text-sm truncate">{girl.name} <span className="text-[10px] opacity-80">({girl.age})</span></p>
-                  <p className="text-[10px] text-slate-300 mt-0.5 truncate">{girl.is_attending ? '✨ 即ご案内可能' : '💤 お休み中'}</p>
+                <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 via-black/20 to-transparent p-2 text-white opacity-90 group-hover:opacity-100 transition-opacity">
+                  <p className="font-bold text-base drop-shadow-md truncate">{girl.name} <span className="text-xs opacity-90 drop-shadow">({girl.age})</span></p>
+                  <p className="text-[10px] text-pink-200 font-medium drop-shadow-md mt-0.5 truncate">{getStatusText(girl)}</p>
                 </div>
               </Link>
             )

@@ -252,27 +252,8 @@ export default function GirlDetailPage() {
             プロフィール詳細
           </h2>
 
-          <div className="grid grid-cols-2 gap-y-4 gap-x-8 mb-4">
-            <div className="flex justify-between border-b border-slate-100 pb-1">
-              <span className="text-xs font-bold text-slate-400">身長</span>
-              <span className="font-bold text-slate-700">{girl.height ? `${girl.height}cm` : '-'}</span>
-            </div>
-            <div className="flex justify-between border-b border-slate-100 pb-1">
-              <span className="text-xs font-bold text-slate-400">年齢</span>
-              <span className="font-bold text-slate-700">{girl.age ? `${girl.age}歳` : '-'}</span>
-            </div>
-            <div className="flex justify-between border-b border-slate-100 pb-1">
-              <span className="text-xs font-bold text-slate-400">職業</span>
-              <span className="font-bold text-slate-700">秘密❤️</span>
-            </div>
-            <div className="flex justify-between border-b border-slate-100 pb-1">
-              <span className="text-xs font-bold text-slate-400">性格</span>
-              <span className="font-bold text-slate-700">癒やし系</span>
-            </div>
-          </div>
-
           {/* スリーサイズ */}
-          <div className="bg-slate-50 rounded-xl p-3 grid grid-cols-3 gap-2 text-center">
+          <div className="bg-slate-50 rounded-xl p-3 grid grid-cols-3 gap-2 text-center mb-4">
             <div>
               <p className="text-[10px] font-bold text-slate-400">BUST</p>
               <p className="font-black text-slate-700 text-lg">
@@ -287,6 +268,60 @@ export default function GirlDetailPage() {
               <p className="text-[10px] font-bold text-slate-400">HIP</p>
               <p className="font-black text-slate-700 text-lg">{girl.hip || '-'}</p>
             </div>
+          </div>
+
+          {/* 詳細テーブル */}
+          <div className="grid grid-cols-2 gap-y-3 gap-x-8 mb-4">
+            <div className="flex justify-between border-b border-slate-100 pb-1">
+              <span className="text-xs font-bold text-slate-400">身長</span>
+              <span className="font-bold text-slate-700">{girl.height ? `${girl.height}cm` : '-'}</span>
+            </div>
+            <div className="flex justify-between border-b border-slate-100 pb-1">
+              <span className="text-xs font-bold text-slate-400">年齢</span>
+              <span className="font-bold text-slate-700">{girl.age ? `${girl.age}歳` : '-'}</span>
+            </div>
+            {girl.birthplace && (
+              <div className="flex justify-between border-b border-slate-100 pb-1">
+                <span className="text-xs font-bold text-slate-400">出身地</span>
+                <span className="font-bold text-slate-700">{girl.birthplace}</span>
+              </div>
+            )}
+            {girl.blood_type && (
+              <div className="flex justify-between border-b border-slate-100 pb-1">
+                <span className="text-xs font-bold text-slate-400">血液型</span>
+                <span className="font-bold text-slate-700">{girl.blood_type}</span>
+              </div>
+            )}
+            {girl.zodiac && (
+              <div className="flex justify-between border-b border-slate-100 pb-1">
+                <span className="text-xs font-bold text-slate-400">星座</span>
+                <span className="font-bold text-slate-700">{girl.zodiac}</span>
+              </div>
+            )}
+            {girl.similar_celeb && (
+              <div className="flex justify-between border-b border-slate-100 pb-1">
+                <span className="text-xs font-bold text-slate-400">似てる芸能人</span>
+                <span className="font-bold text-slate-700">{girl.similar_celeb}</span>
+              </div>
+            )}
+            {girl.charm_point && (
+              <div className="col-span-2 flex justify-between border-b border-slate-100 pb-1">
+                <span className="text-xs font-bold text-slate-400">チャームポイント</span>
+                <span className="font-bold text-slate-700">{girl.charm_point}</span>
+              </div>
+            )}
+            {girl.alcohol && (
+              <div className="flex justify-between border-b border-slate-100 pb-1">
+                <span className="text-xs font-bold text-slate-400">お酒</span>
+                <span className="font-bold text-slate-700">{girl.alcohol}</span>
+              </div>
+            )}
+            {girl.tobacco && (
+              <div className="flex justify-between border-b border-slate-100 pb-1">
+                <span className="text-xs font-bold text-slate-400">タバコ</span>
+                <span className="font-bold text-slate-700">{girl.tobacco}</span>
+              </div>
+            )}
           </div>
 
           {/* 特徴タグ */}
@@ -323,31 +358,58 @@ export default function GirlDetailPage() {
         )}
 
         {/* 6.5 Q&A 一問一答 */}
-        {(girl.q_hobby || girl.q_type || girl.q_fetish) && (
+        {(girl.q_hobby || girl.q_type || girl.q_fetish || girl.q_sensitive || girl.q_play || girl.q_first_time || girl.q_off_day || girl.q_dream) && (
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
             <h2 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2 border-l-4 border-blue-400 pl-3">
-              <span>💬</span> 教えて！Q&A
+              教えて！Q&A
             </h2>
             <div className="space-y-4">
-              {/* 趣味 */}
               {girl.q_hobby && (
                 <div className="border-b border-slate-100 pb-3">
                   <span className="text-xs font-bold text-blue-400 block mb-1">Q. 趣味・特技は？</span>
                   <p className="text-sm text-slate-700">{girl.q_hobby}</p>
                 </div>
               )}
-              {/* タイプ */}
               {girl.q_type && (
                 <div className="border-b border-slate-100 pb-3">
                   <span className="text-xs font-bold text-pink-400 block mb-1">Q. 好きなタイプは？</span>
                   <p className="text-sm text-slate-700">{girl.q_type}</p>
                 </div>
               )}
-              {/* フェチ */}
               {girl.q_fetish && (
-                <div>
+                <div className="border-b border-slate-100 pb-3">
                   <span className="text-xs font-bold text-purple-400 block mb-1">Q. 実は〇〇フェチです</span>
                   <p className="text-sm text-slate-700">{girl.q_fetish}</p>
+                </div>
+              )}
+              {girl.q_sensitive && (
+                <div className="border-b border-slate-100 pb-3">
+                  <span className="text-xs font-bold text-red-400 block mb-1">Q. 感じやすいところは？</span>
+                  <p className="text-sm text-slate-700">{girl.q_sensitive}</p>
+                </div>
+              )}
+              {girl.q_play && (
+                <div className="border-b border-slate-100 pb-3">
+                  <span className="text-xs font-bold text-orange-400 block mb-1">Q. 得意プレイは？</span>
+                  <p className="text-sm text-slate-700">{girl.q_play}</p>
+                </div>
+              )}
+              {girl.q_first_time && (
+                <div className="border-b border-slate-100 pb-3">
+                  <span className="text-xs font-bold text-green-500 block mb-1">Q. 初めてのお客様に一言</span>
+                  <p className="text-sm text-slate-700">{girl.q_first_time}</p>
+                </div>
+              )}
+              {girl.q_off_day && (
+                <div className="border-b border-slate-100 pb-3">
+                  <span className="text-xs font-bold text-cyan-500 block mb-1">Q. お休みの日は何してる？</span>
+                  <p className="text-sm text-slate-700">{girl.q_off_day}</p>
+                </div>
+              )}
+              {girl.q_dream && (
+                <div>
+                  <span className="text-xs font-bold text-amber-500 block mb-1">Q. 将来の夢は？</span>
+                  <p className="text-sm text-slate-700">{girl.q_dream}</p>
                 </div>
               )}
             </div>

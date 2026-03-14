@@ -91,6 +91,9 @@ export default function AdminPage() {
     today_hours: '',
     message: '',
     q_hobby: '', q_type: '', q_fetish: '',
+    q_sensitive: '', q_play: '', q_first_time: '', q_off_day: '', q_dream: '',
+    birthplace: '', zodiac: '', blood_type: '', alcohol: '', tobacco: '',
+    charm_point: '', similar_celeb: '', prev_job: '',
     tags: [] as string[]
   })
 
@@ -305,6 +308,19 @@ export default function AdminPage() {
         q_hobby: girl.q_hobby || '',
         q_type: girl.q_type || '',
         q_fetish: girl.q_fetish || '',
+        q_sensitive: girl.q_sensitive || '',
+        q_play: girl.q_play || '',
+        q_first_time: girl.q_first_time || '',
+        q_off_day: girl.q_off_day || '',
+        q_dream: girl.q_dream || '',
+        birthplace: girl.birthplace || '',
+        zodiac: girl.zodiac || '',
+        blood_type: girl.blood_type || '',
+        alcohol: girl.alcohol || '',
+        tobacco: girl.tobacco || '',
+        charm_point: girl.charm_point || '',
+        similar_celeb: girl.similar_celeb || '',
+        prev_job: girl.prev_job || '',
         tags: girl.tags || []
       })
       setExistingImages(girl.images || [])
@@ -313,7 +329,11 @@ export default function AdminPage() {
       setFormData({
         name: '', age: '', height: '', bust: '', waist: '', hip: '', cup: '',
         schedule_comment: '', today_hours: '', message: '',
-        q_hobby: '', q_type: '', q_fetish: '', tags: []
+        q_hobby: '', q_type: '', q_fetish: '',
+        q_sensitive: '', q_play: '', q_first_time: '', q_off_day: '', q_dream: '',
+        birthplace: '', zodiac: '', blood_type: '', alcohol: '', tobacco: '',
+        charm_point: '', similar_celeb: '', prev_job: '',
+        tags: []
       })
       setExistingImages([])
     }
@@ -351,6 +371,19 @@ export default function AdminPage() {
         q_hobby: formData.q_hobby,
         q_type: formData.q_type,
         q_fetish: formData.q_fetish,
+        q_sensitive: formData.q_sensitive,
+        q_play: formData.q_play,
+        q_first_time: formData.q_first_time,
+        q_off_day: formData.q_off_day,
+        q_dream: formData.q_dream,
+        birthplace: formData.birthplace,
+        zodiac: formData.zodiac,
+        blood_type: formData.blood_type,
+        alcohol: formData.alcohol,
+        tobacco: formData.tobacco,
+        charm_point: formData.charm_point,
+        similar_celeb: formData.similar_celeb,
+        prev_job: formData.prev_job,
         tags: formData.tags,
         images: imageUrls
       }
@@ -647,14 +680,52 @@ export default function AdminPage() {
                 <input placeholder="H" className="w-full border border-slate-300 p-2 text-slate-900" value={formData.hip} onChange={e => setFormData({ ...formData, hip: e.target.value })} />
               </div>
 
+              {/* 詳細プロフィール */}
+              <div className="bg-emerald-50 p-3 rounded-lg border border-emerald-200 space-y-3">
+                <label className="text-xs font-bold text-emerald-800 block">📋 詳細プロフィール</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><label className="text-[10px] font-bold text-slate-500">出身地</label><input className="w-full border border-slate-300 rounded p-2 text-slate-900 text-sm" value={formData.birthplace} onChange={e => setFormData({ ...formData, birthplace: e.target.value })} placeholder="例: 千葉県" /></div>
+                  <div><label className="text-[10px] font-bold text-slate-500">星座</label>
+                    <select className="w-full border border-slate-300 rounded p-2 text-slate-900 text-sm bg-white" value={formData.zodiac} onChange={e => setFormData({ ...formData, zodiac: e.target.value })}>
+                      <option value="">選択</option>
+                      {['牡羊座','牡牛座','双子座','蟹座','獅子座','乙女座','天秤座','蠍座','射手座','山羊座','水瓶座','魚座'].map(z => <option key={z} value={z}>{z}</option>)}
+                    </select>
+                  </div>
+                  <div><label className="text-[10px] font-bold text-slate-500">血液型</label>
+                    <select className="w-full border border-slate-300 rounded p-2 text-slate-900 text-sm bg-white" value={formData.blood_type} onChange={e => setFormData({ ...formData, blood_type: e.target.value })}>
+                      <option value="">選択</option>
+                      {['A型','B型','O型','AB型'].map(b => <option key={b} value={b}>{b}</option>)}
+                    </select>
+                  </div>
+                  <div><label className="text-[10px] font-bold text-slate-500">お酒</label>
+                    <select className="w-full border border-slate-300 rounded p-2 text-slate-900 text-sm bg-white" value={formData.alcohol} onChange={e => setFormData({ ...formData, alcohol: e.target.value })}>
+                      <option value="">選択</option>
+                      {['飲む','少し飲む','飲まない'].map(a => <option key={a} value={a}>{a}</option>)}
+                    </select>
+                  </div>
+                  <div><label className="text-[10px] font-bold text-slate-500">タバコ</label>
+                    <select className="w-full border border-slate-300 rounded p-2 text-slate-900 text-sm bg-white" value={formData.tobacco} onChange={e => setFormData({ ...formData, tobacco: e.target.value })}>
+                      <option value="">選択</option>
+                      {['吸わない','吸う','時々'].map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div><label className="text-[10px] font-bold text-slate-500">似てる芸能人</label><input className="w-full border border-slate-300 rounded p-2 text-slate-900 text-sm" value={formData.similar_celeb} onChange={e => setFormData({ ...formData, similar_celeb: e.target.value })} placeholder="例: 橋本環奈" /></div>
+                </div>
+                <div><label className="text-[10px] font-bold text-slate-500">チャームポイント</label><input className="w-full border border-slate-300 rounded p-2 text-slate-900 text-sm" value={formData.charm_point} onChange={e => setFormData({ ...formData, charm_point: e.target.value })} placeholder="例: 笑った時のえくぼ" /></div>
+                <div><label className="text-[10px] font-bold text-slate-500">前職</label><input className="w-full border border-slate-300 rounded p-2 text-slate-900 text-sm" value={formData.prev_job} onChange={e => setFormData({ ...formData, prev_job: e.target.value })} placeholder="例: アパレル店員" /></div>
+              </div>
+
               {/* Q&A入力欄 */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 block">Q. 趣味・特技</label>
-                <input className="w-full border border-slate-300 rounded p-2 text-slate-900 text-sm" value={formData.q_hobby} onChange={e => setFormData({ ...formData, q_hobby: e.target.value })} placeholder="例: カフェ巡り" />
-                <label className="text-xs font-bold text-slate-500 block">Q. 好きなタイプ</label>
-                <input className="w-full border border-slate-300 rounded p-2 text-slate-900 text-sm" value={formData.q_type} onChange={e => setFormData({ ...formData, q_type: e.target.value })} placeholder="例: 優しくて面白い人" />
-                <label className="text-xs font-bold text-slate-500 block">Q. フェチ・弱点</label>
-                <input className="w-full border border-slate-300 rounded p-2 text-slate-900 text-sm" value={formData.q_fetish} onChange={e => setFormData({ ...formData, q_fetish: e.target.value })} placeholder="例: 匂いフェチです" />
+              <div className="bg-blue-50 p-3 rounded-lg border border-blue-200 space-y-2">
+                <label className="text-xs font-bold text-blue-800 block">💬 Q&A 一問一答</label>
+                <div><label className="text-[10px] font-bold text-slate-500">Q. 趣味・特技は？</label><input className="w-full border border-slate-300 rounded p-2 text-slate-900 text-sm" value={formData.q_hobby} onChange={e => setFormData({ ...formData, q_hobby: e.target.value })} placeholder="例: カフェ巡り" /></div>
+                <div><label className="text-[10px] font-bold text-slate-500">Q. 好きなタイプは？</label><input className="w-full border border-slate-300 rounded p-2 text-slate-900 text-sm" value={formData.q_type} onChange={e => setFormData({ ...formData, q_type: e.target.value })} placeholder="例: 優しくて面白い人" /></div>
+                <div><label className="text-[10px] font-bold text-slate-500">Q. 実は〇〇フェチです</label><input className="w-full border border-slate-300 rounded p-2 text-slate-900 text-sm" value={formData.q_fetish} onChange={e => setFormData({ ...formData, q_fetish: e.target.value })} placeholder="例: 匂いフェチです" /></div>
+                <div><label className="text-[10px] font-bold text-slate-500">Q. 感じやすいところは？</label><input className="w-full border border-slate-300 rounded p-2 text-slate-900 text-sm" value={formData.q_sensitive} onChange={e => setFormData({ ...formData, q_sensitive: e.target.value })} placeholder="例: 耳元で囁かれると..." /></div>
+                <div><label className="text-[10px] font-bold text-slate-500">Q. 得意プレイは？</label><input className="w-full border border-slate-300 rounded p-2 text-slate-900 text-sm" value={formData.q_play} onChange={e => setFormData({ ...formData, q_play: e.target.value })} placeholder="例: 全身リップが得意です" /></div>
+                <div><label className="text-[10px] font-bold text-slate-500">Q. 初めてのお客様に一言</label><input className="w-full border border-slate-300 rounded p-2 text-slate-900 text-sm" value={formData.q_first_time} onChange={e => setFormData({ ...formData, q_first_time: e.target.value })} placeholder="例: 緊張しないでくださいね" /></div>
+                <div><label className="text-[10px] font-bold text-slate-500">Q. お休みの日は何してる？</label><input className="w-full border border-slate-300 rounded p-2 text-slate-900 text-sm" value={formData.q_off_day} onChange={e => setFormData({ ...formData, q_off_day: e.target.value })} placeholder="例: Netflix見てゴロゴロ" /></div>
+                <div><label className="text-[10px] font-bold text-slate-500">Q. 将来の夢は？</label><input className="w-full border border-slate-300 rounded p-2 text-slate-900 text-sm" value={formData.q_dream} onChange={e => setFormData({ ...formData, q_dream: e.target.value })} placeholder="例: 海外旅行に行きたい！" /></div>
               </div>
 
               <div>
