@@ -11,18 +11,14 @@ export default function SuperPickupSection() {
     async function getPickupCasts() {
       setLoading(true)
       try {
-        const d = new Date()
-        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-        const res = await fetch(`${process.env.NEXT_PUBLIC_CRM_API_URL}/idol/schedules?store_id=2&date=${dateStr}`)
-        if (!res.ok) throw new Error('Failed to fetch schedules from CRM')
+        const res = await fetch(`${process.env.NEXT_PUBLIC_CRM_API_URL}/idol/casts?store_id=2`)
+        if (!res.ok) throw new Error('Failed to fetch casts from CRM')
 
         const json = await res.json()
-        const dayData = json.schedules && json.schedules.length > 0 ? json.schedules[0] : null
-        const scheduledCasts = dayData ? dayData.casts : []
+        const casts = json.success && json.casts ? json.casts : []
         
-        // Filter active & pickup
-        const activeStatuses = ['出勤', '即案内可能', '待機中', '接客中']
-        const filtered = scheduledCasts.filter((c: any) => activeStatuses.includes(c.status) && c.is_pickup)
+        // Always display pickup casts unconditionally
+        const filtered = casts.filter((c: any) => c.is_pickup)
         
         setGirls(filtered)
       } catch (err) {

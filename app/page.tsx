@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Noto_Sans_JP } from 'next/font/google'
+import SuperPickupSection from '@/components/SuperPickupSection'
 
 const baseFont = Noto_Sans_JP({
   weight: ['700', '900'],
@@ -26,6 +27,9 @@ export default function Home() {
           </p>
         </div>
       </div>
+
+      {/* トップピックアップ（お店の看板・常時表示） */}
+      <SuperPickupSection />
 
       {/* 2. 店舗選択エリア */}
       <div className="max-w-5xl mx-auto p-4 md:p-8 grid md:grid-cols-2 gap-8 -mt-6 relative z-20">
