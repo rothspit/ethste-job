@@ -111,7 +111,7 @@ export default function ScheduleSection() {
         ))}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {girls.length === 0 ? (
            <div className="col-span-full py-10 text-center text-sm text-pink-400 font-bold bg-white rounded-3xl border border-pink-100 shadow-sm">現在、本日の出勤メンバーはいません</div>
         ) : girls.map((girl: any) => {

@@ -32,7 +32,7 @@ export default function RankingSection() {
         <span className="text-pink-400 text-2xl">👑</span> 先月の人気ランキング
       </h2>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {girls.map((girl: any) => (
           <div key={girl.id} className="relative group">
             {/* 順位バッジ */}

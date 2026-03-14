@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+import Image from 'next/image'
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
@@ -125,13 +126,26 @@ export default function GirlDetailPage() {
           {allImages.length > 0 ? (
             <>
               {allImages.map((img: string, i: number) => (
-                <img
-                  key={i}
-                  src={img}
-                  alt={`${girl.name} ${i + 1}`}
-                  className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
-                  style={{ opacity: i === currentSlide ? 1 : 0 }}
-                />
+                img.includes('placehold.co') || img.endsWith('.svg') ? (
+                  <img
+                    key={i}
+                    src={img}
+                    alt={`${girl.name} ${i + 1}`}
+                    className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
+                    style={{ opacity: i === currentSlide ? 1 : 0 }}
+                  />
+                ) : (
+                  <div key={i} className="absolute inset-0 w-full h-full transition-opacity duration-500" style={{ opacity: i === currentSlide ? 1 : 0 }}>
+                    <Image 
+                      src={img}
+                      alt={`${girl.name} ${i + 1}`}
+                      fill
+                      quality={95}
+                      className="object-cover"
+                      priority={i === 0}
+                    />
+                  </div>
+                )
               ))}
 
               {/* 前へ / 次へボタン */}
@@ -202,7 +216,11 @@ export default function GirlDetailPage() {
                 onClick={() => goToSlide(i)}
                 className={`w-12 h-14 rounded-lg overflow-hidden shrink-0 border-2 transition-all ${i === currentSlide ? 'border-pink-500 ring-1 ring-pink-300' : 'border-transparent opacity-60 hover:opacity-100'}`}
               >
-                <img src={img} className="w-full h-full object-cover" alt="" />
+                {img.includes('placehold.co') || img.endsWith('.svg') ? (
+                  <img src={img} className="w-full h-full object-cover" alt="" />
+                ) : (
+                  <Image src={img} layout="fill" objectFit="cover" alt="" />
+                )}
               </button>
             ))}
           </div>
