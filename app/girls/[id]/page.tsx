@@ -1,8 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
