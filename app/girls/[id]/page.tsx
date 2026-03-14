@@ -70,6 +70,7 @@ export default function GirlDetailPage() {
 
   // 画像URLを取得するヘルパー関数
   const getImageUrl = (g: any) => {
+    if (g.idol_image_path) return g.idol_image_path
     if (g.images && g.images[0]) return g.images[0]
     if (g.image1_url) return g.image1_url
     return null
@@ -78,7 +79,7 @@ export default function GirlDetailPage() {
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-400">読み込み中...</div>
   if (!girl) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-400">データが見つかりません</div>
 
-  const allImages = (girl.images && girl.images.length > 0) ? girl.images : (girl.image1_url ? [girl.image1_url] : [])
+  const allImages = (girl.images && girl.images.length > 0) ? girl.images : (girl.idol_image_path ? [girl.idol_image_path] : (girl.image1_url ? [girl.image1_url] : []))
 
   const goToSlide = (index: number) => {
     if (index < 0) setCurrentSlide(allImages.length - 1)

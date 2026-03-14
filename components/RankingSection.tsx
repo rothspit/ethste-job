@@ -33,7 +33,7 @@ export default function RankingSection() {
       </h2>
 
       <div className="grid grid-cols-3 gap-3">
-        {girls.map((girl) => (
+        {girls.map((girl: any) => (
           <div key={girl.id} className="relative group">
             {/* 順位バッジ */}
             <div className={`absolute -top-3 -left-2 z-10 w-8 h-8 flex items-center justify-center rounded-full font-black text-white shadow-sm border-2 border-white ${
@@ -46,9 +46,9 @@ export default function RankingSection() {
 
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-pink-100 hover:shadow-md transition-shadow">
               <div className="aspect-[4/5] bg-pink-50 relative">
-                {girl.image1_url ? (
+                {girl.idol_image_path || girl.image1_url ? (
                   <Image 
-                    src={girl.image1_url} 
+                    src={girl.idol_image_path || girl.image1_url} 
                     alt={girl.name} 
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-110"

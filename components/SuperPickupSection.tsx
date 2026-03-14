@@ -56,7 +56,7 @@ export default function SuperPickupSection() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10">
         {girls.map((girl: any) => {
           const status = getStatus(girl.status)
-          const imageUrl = girl.image || null
+          const imageUrl = girl.idol_image_path || girl.image || null
           const videoUrl = girl.pickup_video_url || null
 
           return (

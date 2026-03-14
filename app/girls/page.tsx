@@ -22,7 +22,7 @@ export default async function GirlsListPage() {
   const girls = await getGirls()
 
   // CRM APIからのデータ構造に合わせて調整
-  const getImageUrl = (girl: any) => girl.image || null
+  const getImageUrl = (girl: any) => girl.idol_image_path || girl.image || null
   const getStatusText = (girl: any) => girl.status === '接客中' ? '💕 接客中' : girl.status === '待機中' || girl.status === '即案内可能' || !!girl.is_attending ? '✨ 即ご案内可能' : '💤 お休み中'
   const isAttending = (girl: any) => girl.status !== 'お休み中' && girl.status !== '退店'
 

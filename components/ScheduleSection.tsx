@@ -56,7 +56,7 @@ export default function ScheduleSection() {
   }, [selectedDate])
 
   // 画像URLを取得するヘルパー関数
-  const getImageUrl = (g: any) => g.image || null
+  const getImageUrl = (g: any) => g.idol_image_path || g.image || null
 
   // APIのstatus文字列を見て、状態を判定する関数
   const getStatus = (castStatus: string) => {
