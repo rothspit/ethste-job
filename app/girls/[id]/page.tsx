@@ -1,9 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 import Link from 'next/link'
 import { useParams, notFound } from 'next/navigation'
 import ReviewForm from '@/components/ReviewForm'
