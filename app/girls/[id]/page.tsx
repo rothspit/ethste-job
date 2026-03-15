@@ -118,94 +118,79 @@ export default function GirlDetailPage() {
         <span className="font-bold text-slate-800">{girl?.name}</span>
       </div>
 
-      {/* 2. 画像スライダー */}
-      <div className="w-full max-w-sm mx-auto my-8">
-        <div className="aspect-[3/4] relative rounded-2xl overflow-hidden shadow-xl border border-white/50"
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
+      {/* 2. 画像スライダー (Swipeable Carousel) */}
+      <div className="w-full max-w-sm mx-auto my-8 px-2">
+        <div 
+          className="relative rounded-2xl overflow-hidden shadow-xl border border-white/50 bg-white"
         >
           {allImages.length > 0 ? (
-            <>
+            <div 
+              className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide w-full h-auto aspect-[3/4]"
+              onScroll={(e) => {
+                const target = e.target as HTMLDivElement;
+                const index = Math.round(target.scrollLeft / target.clientWidth);
+                setCurrentSlide(index);
+              }}
+            >
               {allImages.map((img: string, i: number) => (
-                <img
-                  key={i}
-                  src={img}
-                  alt={`${girl?.name || ''} ${i + 1}`}
-                  className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
-                  style={{ opacity: i === currentSlide ? 1 : 0 }}
-                />
+                <div key={i} className="min-w-full w-full h-full snap-center relative shrink-0">
+                  <img
+                    src={img}
+                    alt={`${girl?.name || ''} ${i + 1}`}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  {/* 画像の上に名前を重ねておしゃれに（最初の1枚目だけ出すか、全部に出すかはお好み 今回は全部に出す） */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6 pt-12 z-10 pointer-events-none">
+                    <h1 className="text-2xl font-bold text-white shadow-sm">
+                      {girl?.name}
+                    </h1>
+                    <p className="text-white/80 text-sm">{girl?.age ? `${girl.age}歳` : ''}</p>
+                    {girl?.is_attending && (
+                      <div className="inline-flex items-center gap-1 bg-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse shadow-lg border border-pink-400 mt-2">
+                        <span className="w-2 h-2 bg-white rounded-full"></span>
+                        本日出勤中！
+                      </div>
+                    )}
+                  </div>
+                </div>
               ))}
-
-              {/* 前へ / 次へボタン */}
-              {allImages.length > 1 && (
-                <>
-                  <button
-                    onClick={() => goToSlide(currentSlide - 1)}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors z-10"
-                  >
-                    ‹
-                  </button>
-                  <button
-                    onClick={() => goToSlide(currentSlide + 1)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors z-10"
-                  >
-                    ›
-                  </button>
-                </>
-              )}
-
-              {/* ドットインジケーター */}
-              {allImages.length > 1 && (
-                <div className="absolute bottom-16 left-0 right-0 flex justify-center gap-1.5 z-10">
-                  {allImages.map((_: string, i: number) => (
-                    <button
-                      key={i}
-                      onClick={() => goToSlide(i)}
-                      className={`w-2 h-2 rounded-full transition-all ${i === currentSlide ? 'bg-white w-4' : 'bg-white/50'}`}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {/* 枚数表示 */}
-              {allImages.length > 1 && (
-                <div className="absolute top-3 right-3 bg-black/40 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm z-10">
-                  {currentSlide + 1} / {allImages.length}
-                </div>
-              )}
-            </>
+            </div>
           ) : (
-            <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
+            <div className="w-full aspect-[3/4] bg-slate-100 flex items-center justify-center text-slate-400">
               No Image
             </div>
           )}
 
-          {/* 画像の上に名前を重ねておしゃれに */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6 pt-12 z-10">
-            <h1 className="text-2xl font-bold text-white shadow-sm">
-              {girl?.name}
-            </h1>
-            <p className="text-white/80 text-sm">{girl?.age ? `${girl.age}歳` : ''}</p>
-            {girl?.is_attending && (
-              <div className="inline-flex items-center gap-1 bg-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse shadow-lg border border-pink-400 mt-2">
-                <span className="w-2 h-2 bg-white rounded-full"></span>
-                本日出勤中！
-              </div>
-            )}
-          </div>
+          {/* ドットインジケーター */}
+          {allImages.length > 1 && (
+            <div className="absolute top-4 left-0 right-0 flex justify-center gap-1.5 z-10 pointer-events-none">
+              {allImages.map((_: string, i: number) => (
+                <div
+                  key={i}
+                  className={`h-1 rounded-full transition-all shadow-sm ${i === currentSlide ? 'bg-white w-6 opacity-100' : 'bg-white/50 w-2 opacity-70'}`}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* 枚数表示 */}
+          {allImages.length > 1 && (
+            <div className="absolute top-3 right-3 bg-black/40 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm z-10 pointer-events-none">
+              {currentSlide + 1} / {allImages.length}
+            </div>
+          )}
         </div>
 
         {/* サムネイル一覧 */}
         {allImages.length > 1 && (
-          <div className="flex gap-1.5 mt-3 justify-center overflow-x-auto px-2">
+          <div className="flex gap-1.5 mt-3 justify-center overflow-x-auto px-2 scrollbar-hide snap-x">
             {allImages.map((img: string, i: number) => (
-              <button
+              <div
                 key={i}
-                onClick={() => goToSlide(i)}
-                className={`w-12 h-14 rounded-lg overflow-hidden shrink-0 border-2 transition-all ${i === currentSlide ? 'border-pink-500 ring-1 ring-pink-300' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                className={`w-12 h-14 rounded-lg overflow-hidden shrink-0 snap-center border-2 transition-all ${i === currentSlide ? 'border-pink-500 ring-1 ring-pink-300 scale-110' : 'border-transparent opacity-60'}`}
               >
                 <img src={img} className="w-full h-full object-cover" alt="" />
-              </button>
+              </div>
             ))}
           </div>
         )}
@@ -557,15 +542,15 @@ export default function GirlDetailPage() {
         <div className="max-w-xl mx-auto relative pointer-events-auto px-4 py-3 pb-safe flex gap-3">
 
           <a href="tel:05017459665" className="flex-1 bg-white border-2 border-pink-500 text-pink-600 rounded-full flex flex-col items-center justify-center py-2 shadow-lg active:scale-95 transition-transform hover:bg-pink-50">
-            <span className="text-[10px] font-bold">電話で空き確認</span>
-            <span className="text-lg font-black leading-none tracking-tighter">050-1745-9665</span>
+            <div className="text-[10px] font-bold">電話で空き確認</div>
+            <div className="text-lg font-black leading-none tracking-tighter">050-1745-9665</div>
           </a>
 
           <Link href="/chat" className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full flex items-center justify-center gap-2 py-2 shadow-lg active:scale-95 transition-transform hover:opacity-90 ring-2 ring-white ring-offset-2 ring-offset-blue-200">
-            <span className="text-2xl animate-pulse">💬</span>
+            <div className="text-2xl animate-pulse">💬</div>
             <div className="flex flex-col leading-none">
-               <span className="text-[10px] font-bold opacity-90">待たずに連絡</span>
-               <span className="font-black text-lg">今すぐ指名</span>
+               <div className="text-[10px] font-bold opacity-90">待たずに連絡</div>
+               <div className="font-black text-lg">今すぐ指名</div>
             </div>
           </Link>
 

@@ -49,15 +49,15 @@ export default function Home() {
         </Link>
 
         {/* 💋 人妻の蜜（外部リンク） */}
-        <a href="https://h-mitsu.com" target="_blank" rel="noopener noreferrer" className="group relative overflow-hidden rounded-2xl border-4 border-purple-600 transform hover:-translate-y-2 transition-all duration-300 shadow-2xl shadow-purple-500/30 bg-gradient-to-t from-purple-900 via-purple-800 to-purple-700">
+        <a href="https://h-mitsu.com" target="_blank" rel="noopener noreferrer" className="group relative overflow-hidden rounded-2xl border-4 border-purple-600 transform hover:-translate-y-2 transition-all duration-300 shadow-2xl shadow-purple-500/30 bg-gradient-to-t from-purple-900 via-purple-800 to-purple-700 block">
           <div className="relative p-8 h-80 flex flex-col items-center text-center justify-end">
-            <div className="bg-purple-600 text-white text-xs font-black px-4 py-1 rounded-full mb-3 shadow-md">大人の極上癒やし</div>
+            <div className="bg-purple-600 text-white text-xs font-black px-4 py-1 rounded-full mb-3 shadow-md inline-block">大人の極上癒やし</div>
 
-            <h2 className={`${baseFont.className} text-4xl md:text-5xl text-white mb-2 font-black drop-shadow-md tracking-wide`}>
+            <h2 className={`${baseFont.className} text-4xl md:text-5xl text-white mb-2 font-black drop-shadow-md tracking-wide block`}>
               人妻の<span className="text-purple-300">蜜</span>
             </h2>
-            <p className="text-purple-200 font-bold mb-4 text-sm drop-shadow">西船橋・葛西・錦糸町</p>
-            <div className="bg-white/90 text-purple-600 py-3 px-8 rounded-full font-black shadow-lg group-hover:bg-white transition-colors">
+            <div className="text-purple-200 font-bold mb-4 text-sm drop-shadow block">西船橋・葛西・錦糸町</div>
+            <div className="bg-white/90 text-purple-600 py-3 px-8 rounded-full font-black shadow-lg group-hover:bg-white transition-colors inline-block">
               公式サイトへ ➡
             </div>
           </div>
