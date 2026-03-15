@@ -519,7 +519,7 @@ export default function GirlDetailPage() {
             <div className="text-lg font-black leading-none tracking-tighter">050-1745-9665</div>
           </a>
 
-          <Link href="/chat" className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full flex items-center justify-center gap-2 py-2 shadow-lg active:scale-95 transition-transform hover:opacity-90 ring-2 ring-white ring-offset-2 ring-offset-blue-200">
+          <Link href="/tiara" className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full flex items-center justify-center gap-2 py-2 shadow-lg active:scale-95 transition-transform hover:opacity-90 ring-2 ring-white ring-offset-2 ring-offset-blue-200">
             <div className="text-2xl animate-pulse">💬</div>
             <div className="flex flex-col leading-none">
                <div className="text-[10px] font-bold opacity-90">待たずに連絡</div>

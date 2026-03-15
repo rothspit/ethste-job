@@ -229,7 +229,7 @@ export default function SchedulePage() {
             <span className="text-[10px] font-bold">電話で空き確認</span>
             <span className="text-base font-black leading-none">050-1745-9665</span>
           </a>
-          <Link href="/chat" className="flex-1 bg-pink-500 text-white rounded-full flex items-center justify-center gap-2 py-2 shadow active:scale-95 transition-transform">
+          <Link href="/tiara" className="flex-1 bg-pink-500 text-white rounded-full flex items-center justify-center gap-2 py-2 shadow active:scale-95 transition-transform">
             <span className="text-xl">&#x1F4AC;</span>
             <span className="font-black">今すぐ指名</span>
           </Link>
