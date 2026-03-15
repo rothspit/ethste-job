@@ -1,6 +1,9 @@
 'use client'
 import { useState, useEffect } from 'react'
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import Link from 'next/link'
 import { useParams, notFound } from 'next/navigation'
 import ReviewForm from '@/components/ReviewForm'
@@ -14,23 +17,27 @@ export default function GirlDetailPage() {
   const [loading, setLoading] = useState(true)
   const [currentSlide, setCurrentSlide] = useState(0)
   const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [debugContext, setDebugContext] = useState<any>(null)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await fetch('https://crm.h-mitsu.com/api/idol/casts?store_id=2', { cache: 'no-store' });
         const data = await res.json();
-        // レスポンスの形に依存しない安全な配列抽出
         const castsArray = Array.isArray(data) ? data : (data.casts || data.data || []);
+        
+        setDebugContext({
+          requestedId: params.id,
+          totalCasts: castsArray.length,
+          availableIds: castsArray.map((c: any) => c.id)
+        })
+
         const currentGirl = castsArray.find((c: any) => c.id.toString() === params.id);
 
         if (currentGirl) {
           setGirl(currentGirl);
-
-          // 2. ページタイトルを動的に変更 (SEO対策: ブラウザのタブ名が変わります)
           document.title = `${currentGirl?.name || 'キャスト'} | 船橋デリヘル アイドル学園`;
 
-          // 2.5 この女の子の日記を取得
           try {
             const diariesRes = await fetch('https://crm.h-mitsu.com/api/idol/diaries?store_id=2', { cache: 'no-store' });
             const diariesData = await diariesRes.json();
@@ -42,10 +49,8 @@ export default function GirlDetailPage() {
             console.error('Failed to fetch diaries', e);
           }
 
-          // 2.6 この女の子の口コミを取得 (API未実装のため空)
           setReviews([]);
 
-          // 3. 関連キャスト取得
           if (data.casts) {
             const others = data.casts.filter((c: any) => c.id.toString() !== params.id).slice(0, 3);
             setRelatedGirls(others);
@@ -69,7 +74,11 @@ export default function GirlDetailPage() {
   }
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-400">読み込み中...</div>
-  if (!girl) return notFound()
+  
+  if (!girl) {
+    console.error("Girl not found for ID:", debugContext?.requestedId, "Available IDs:", debugContext?.availableIds);
+    return notFound()
+  }
 
   const allImages = [];
   if (girl.idol_image_path) allImages.push(girl.idol_image_path);
