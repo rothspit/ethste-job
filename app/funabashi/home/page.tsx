@@ -96,7 +96,7 @@ export default function HomeContentPage() {
               </div>
             </div>
           </a>
-          <Link href="/chat" className="flex-1 group relative">
+          <Link href="/student-council" className="flex-1 group relative">
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 to-cyan-300 rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
             <div className="relative bg-gradient-to-br from-blue-500 via-indigo-500 to-cyan-400 rounded-2xl shadow-md overflow-hidden transform transition-all duration-300 hover:-translate-y-1 active:scale-98 ring-1 ring-blue-300/50">
               <div className="flex flex-col items-center justify-center py-2.5 h-full text-white transition-opacity group-hover:opacity-90 relative overflow-hidden">
