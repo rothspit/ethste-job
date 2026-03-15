@@ -39,7 +39,7 @@ function PhoneInput({ onSubmit }: { onSubmit: (phone: string) => void }) {
         onClick={handleSubmit}
         disabled={phone.replace(/[^0-9]/g, '').length < 10}
         className="w-full mt-3 py-3 rounded-xl font-bold text-sm transition active:scale-95 disabled:opacity-40"
-        style={{ background: 'linear-gradient(135deg, #D4AF37, #F4E4BA, #D4AF37)', color: '#1A1A1A' }}
+        style={{ background: 'linear-gradient(135deg, #EC4899, #FBCFE8, #EC4899)', color: '#1A1A1A' }}
       >
         次へ進む
       </button>
@@ -84,7 +84,7 @@ export default function StudentCouncilPage() {
     if (!currentBookingId) return
 
     const channel = supabaseTiara
-      .channel(`tiara-booking-${currentBookingId}`)
+      .channel(`student-council-booking-${currentBookingId}`)
       .on(
         'postgres_changes',
         {
@@ -93,7 +93,7 @@ export default function StudentCouncilPage() {
           table: 'bookings',
           filter: `id=eq.${currentBookingId}`,
         },
-        (payload) => {
+        (payload: any) => {
           const newStatus = (payload.new as any).status
           const proposalData = (payload.new as any).proposal_data
 
@@ -139,7 +139,7 @@ export default function StudentCouncilPage() {
     setMessages(prev => [...prev, { id: Date.now() + Math.random(), type, content, data }])
   }
 
-  // ダミーキャストデータ
+  // ダミー生徒データ
   const availableCasts = [
     { id: 1, name: 'りな', age: 22, status: '即ご案内OK', tag: '癒し系', available: true },
     { id: 2, name: 'さき', age: 23, status: '14:00〜', tag: '元CA', available: true },
@@ -147,8 +147,8 @@ export default function StudentCouncilPage() {
   ]
 
   const courses = [
-    { name: 'スタンダード', time: '70分', price: 18000 },
-    { name: 'ロイヤル', time: '100分', price: 26000, popular: true },
+    { name: '放課後ベーシック', time: '70分', price: 18000 },
+    { name: '生徒会お悩み相談', time: '100分', price: 26000, popular: true },
     { name: '学園VIP', time: '150分', price: 50000 },
   ]
 
@@ -157,21 +157,21 @@ export default function StudentCouncilPage() {
   // メニュー選択ハンドラー
   const handleMenuSelect = (choice: string) => {
     if (choice === 'availability') {
-      addMessage('user', '出勤状況を見たい')
+      addMessage('user', '登校状況を見たい')
       setTimeout(() => {
-        addMessage('bot', '本日ご案内可能なキャストをご紹介いたします。')
+        addMessage('bot', '本日ご案内可能な生徒をご紹介いたします。')
         setTimeout(() => addMessage('card', '', { casts: availableCasts }), 600)
       }, 500)
     } else if (choice === 'search') {
-      addMessage('user', 'キャストを探したい')
+      addMessage('user', '生徒を探したい')
       setTimeout(() => {
-        addMessage('bot', 'ご希望のタイプはございますか？\n本日の出勤キャストをご覧ください。')
+        addMessage('bot', 'ご希望のタイプはございますか？\n本日の登校生徒をご覧ください。')
         setTimeout(() => addMessage('card', '', { casts: availableCasts }), 600)
       }, 500)
     }
   }
 
-  // キャスト選択
+  // 生徒選択
   const handleCastSelect = (cast: any) => {
     setSelectedCast(cast)
     addMessage('user', `${cast.name}さんを指名したい`)
@@ -210,7 +210,7 @@ export default function StudentCouncilPage() {
     setPhoneNumber(phone)
     addMessage('user', phone)
     setTimeout(() => {
-      addMessage('bot', `ありがとうございます。\n\n📍 場所: 秋葉原プライベートルーム\n（詳細はご予約確定後にご案内いたします）`)
+      addMessage('bot', `ありがとうございます。\n\n📍 場所: アイドル学園 秋葉原校\n（詳細はご予約確定後にご案内いたします）`)
       setTimeout(() => addMessage('confirm', '', { cast: selectedCast, course: selectedCourse, time: selectedTime, phone }), 800)
     }, 500)
   }
@@ -224,7 +224,7 @@ export default function StudentCouncilPage() {
     addMessage('submit', '', { submitting: true })
 
     try {
-      const response = await fetch('/api/tiara/bookings', {
+      const response = await fetch('/api/student-council/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -255,7 +255,7 @@ export default function StudentCouncilPage() {
       setMessages(prev => prev.filter(m => m.type !== 'submit'))
 
       const price = selectedCourse.price - (usePoints ? 2000 : 0)
-      addMessage('bot', `✨ ご予約リクエストを承りました ✨\n\n👸 ${selectedCast.name}\n📋 ${selectedCourse.name}（${selectedCourse.time}）\n🕐 ${selectedTime}〜\n💰 ¥${price.toLocaleString()}\n📞 ${phoneNumber}`)
+      addMessage('bot', `✨ ご予約リクエストを承りました ✨\n\n👧 ${selectedCast.name}\n📋 ${selectedCourse.name}（${selectedCourse.time}）\n🕐 ${selectedTime}〜\n💰 ¥${price.toLocaleString()}\n📞 ${phoneNumber}`)
       setTimeout(() => {
         addMessage('waiting', '', { bookingId: result.bookingId })
       }, 800)
@@ -274,7 +274,7 @@ export default function StudentCouncilPage() {
     if (accept && newTime) {
       addMessage('user', `${newTime}で承知いたしました`)
       try {
-        await fetch(`/api/tiara/bookings/${currentBookingId}`, {
+        await fetch(`/api/student-council/bookings/${currentBookingId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: 'confirmed' }),
@@ -316,7 +316,7 @@ export default function StudentCouncilPage() {
   ]
 
   const accordionItems = [
-    { title: '利用規約', content: '当店は18歳以上の方を対象としたメンズエステサロンです。ご利用の際は身分証明書のご提示をお願いしております。' },
+    { title: '利用規約', content: '当店は18歳以上の方を対象としたリフレサロンです。ご利用の際は身分証明書のご提示をお願いしております。' },
     { title: 'キャンセルポリシー', content: '予約時間の2時間前までは無料でキャンセル可能です。それ以降のキャンセルはキャンセル料が発生する場合がございます。' },
     { title: 'プライバシーポリシー', content: 'お客様の個人情報は厳重に管理し、第三者への提供は一切行いません。' },
   ]
@@ -384,7 +384,7 @@ export default function StudentCouncilPage() {
           </div>
           {menuOpen && (
             <div className="absolute top-full left-0 right-0 bg-white shadow-lg border-t border-gray-100">
-              {['ホーム', 'キャスト', '料金システム', 'アクセス', '求人情報'].map((item, i) => (
+              {['ホーム', '生徒', '料金システム', 'アクセス', '求人情報'].map((item, i) => (
                 <a key={i} href="#" className="block px-6 py-4 border-b border-gray-50 hover:bg-gray-50 text-sm">{item}</a>
               ))}
             </div>
@@ -394,15 +394,15 @@ export default function StudentCouncilPage() {
         {/* News Ticker */}
         <div className="bg-[#E5E7EB] overflow-hidden py-2">
           <div className="news-ticker whitespace-nowrap text-sm text-[#333]">
-            🎀 新人「ひなちゃん」本日デビュー！ 　｜　 ✨ 期間限定！初回指名料無料キャンペーン中 　｜　 👑 人気No.1「りなちゃん」出勤中！
+            🎀 新人「ひなちゃん」本日デビュー！ 　｜　 ✨ 期間限定！初回指名料無料キャンペーン中 　｜　 🎀 人気No.1「りなちゃん」登校中！
           </div>
         </div>
 
-        {/* Today's Princess */}
+        {/* 本日の登校生徒 */}
         <section className="py-6">
           <div className="px-4 mb-4 flex items-center justify-between">
             <h2 className="text-lg font-bold flex items-center gap-2">
-              <span className="text-xl">👑</span> Today's Princess
+              <span className="text-xl">🎀</span> 本日の登校生徒
             </h2>
             <a href="#" className="text-xs text-pink-500 font-medium">すべて見る →</a>
           </div>
@@ -412,7 +412,7 @@ export default function StudentCouncilPage() {
                 <div className="aspect-[3/4] bg-gradient-to-b from-gray-100 to-gray-200 rounded-xl overflow-hidden relative shadow-md">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="w-16 h-16 rounded-full bg-white/80 flex items-center justify-center">
-                      <span className="text-3xl">👸</span>
+                      <span className="text-3xl">👧</span>
                     </div>
                   </div>
                   <div className="absolute bottom-2 left-2 right-2">
@@ -437,18 +437,18 @@ export default function StudentCouncilPage() {
         {/* Ranking */}
         <section className="py-6 px-4">
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-            <span className="text-xl">🏆</span> Weekly Ranking
+            <span className="text-xl">🏆</span> 学園ランキング
           </h2>
           <div className="flex gap-3 justify-center">
             {ranking.map((cast) => (
               <div key={cast.rank} className="flex-1 max-w-[120px]">
                 <div className="relative">
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 text-2xl" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>
-                    {cast.rank === 1 ? '👑' : cast.rank === 2 ? '🥈' : '🥉'}
+                    {cast.rank === 1 ? '🎀' : cast.rank === 2 ? '🥈' : '🥉'}
                   </div>
                   <div className="aspect-square bg-gradient-to-b from-gray-100 to-gray-200 rounded-xl overflow-hidden shadow-md" style={{ border: `3px solid ${cast.color}` }}>
                     <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-4xl">👸</span>
+                      <span className="text-4xl">👧</span>
                     </div>
                   </div>
                 </div>
@@ -470,25 +470,25 @@ export default function StudentCouncilPage() {
               </div>
               <div className="flex-1">
                 <p className="font-bold text-sm">リアルタイム空き状況</p>
-                <p className="text-[11px] text-gray-300">最新の出勤情報をチェック →</p>
+                <p className="text-[11px] text-gray-300">最新の登校情報をチェック →</p>
               </div>
               <div className="text-2xl">→</div>
             </div>
           </a>
         </section>
 
-        {/* Jewel Box */}
+        {/* 生徒名簿 */}
         <section className="py-6 px-4">
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-            <span className="text-xl">💎</span> Jewel Box
-            <span className="text-xs font-normal text-gray-400 ml-2">在籍キャスト</span>
+            <span className="text-xl">💎</span> 生徒名簿
+            <span className="text-xs font-normal text-gray-400 ml-2">在籍生徒</span>
           </h2>
           <div className="grid grid-cols-2 gap-3">
             {allCast.map((cast) => (
               <div key={cast.id} className="bg-white rounded-xl overflow-hidden shadow-sm">
                 <div className="aspect-[3/4] bg-gradient-to-b from-gray-50 to-gray-100 relative">
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-5xl opacity-30">👸</span>
+                    <span className="text-5xl opacity-30">👧</span>
                   </div>
                   <div className="absolute top-2 left-2">
                     <span className="bg-white/90 text-[10px] font-medium px-2 py-1 rounded-full shadow-sm">#{cast.tag}</span>
@@ -506,16 +506,16 @@ export default function StudentCouncilPage() {
           </div>
         </section>
 
-        {/* ========== Member's Privilege (会員特典) ========== */}
+        {/* ========== 生徒手帳 特典 (会員特典) ========== */}
         <section className="py-8 px-4">
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-            <span className="text-xl">💳</span> Member's Privilege
+            <span className="text-xl">💳</span> 生徒手帳 特典
             <span className="text-xs font-normal text-gray-400 ml-2">会員特典</span>
           </h2>
 
           {/* Luxury Member Card */}
           <div className="relative overflow-hidden rounded-2xl p-6 shadow-xl" style={{
-            background: 'linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 50%, #0D0D0D 100%)',
+            background: 'linear-gradient(135deg, #FDF2F8 0%, #FCE7F3 50%, #FBCFE8 100%)',
           }}>
             {/* Shimmer Effect */}
             <div className="absolute inset-0 card-shimmer opacity-20"></div>
@@ -525,26 +525,26 @@ export default function StudentCouncilPage() {
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #D4AF37 0%, #F4E4BA 50%, #D4AF37 100%)' }}>
-                    <span className="text-sm">👑</span>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #EC4899 0%, #FBCFE8 50%, #EC4899 100%)' }}>
+                    <span className="text-sm">🎀</span>
                   </div>
-                  <span className="text-white/90 text-xs tracking-widest font-medium">アイドル学園 会員</span>
+                  <span className="text-pink-600 text-xs tracking-widest font-medium">アイドル学園 生徒手帳</span>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] text-white/50">PLATINUM</span>
+                  <span className="text-[10px] text-pink-400">PLATINUM</span>
                 </div>
               </div>
 
               {/* Main Benefit */}
               <div className="text-center py-4">
-                <p className="text-white/60 text-xs mb-2">会員登録で今すぐもらえる</p>
+                <p className="text-pink-600 font-bold text-xs mb-2">会員登録で今すぐもらえる</p>
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-4xl font-bold" style={{ background: 'linear-gradient(135deg, #D4AF37, #F4E4BA, #D4AF37)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  <span className="text-4xl font-bold" style={{ background: 'linear-gradient(135deg, #EC4899, #FBCFE8, #EC4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                     2,000
                   </span>
-                  <span className="text-lg" style={{ background: 'linear-gradient(135deg, #D4AF37, #F4E4BA)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>pt</span>
+                  <span className="text-lg" style={{ background: 'linear-gradient(135deg, #EC4899, #FBCFE8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>pt</span>
                 </div>
-                <p className="text-white/40 text-[10px] mt-1">（2,000円相当）</p>
+                <p className="text-pink-400 text-[10px] mt-1">（2,000円相当）</p>
               </div>
 
               {/* Benefits List */}
@@ -554,8 +554,8 @@ export default function StudentCouncilPage() {
                   'ポイントは1pt = 1円として利用可能',
                   '誕生月は2倍ポイント進呈',
                 ].map((benefit, i) => (
-                  <div key={i} className="flex items-center gap-2 text-white/70 text-xs">
-                    <span style={{ color: '#D4AF37' }}>✓</span>
+                  <div key={i} className="flex items-center gap-2 text-pink-600 font-medium text-xs">
+                    <span style={{ color: '#EC4899' }}>✓</span>
                     <span>{benefit}</span>
                   </div>
                 ))}
@@ -565,15 +565,15 @@ export default function StudentCouncilPage() {
               <button
                 onClick={initChat}
                 className="w-full mt-6 py-3 rounded-xl text-sm font-bold transition-all active:scale-95"
-                style={{ background: 'linear-gradient(135deg, #D4AF37 0%, #F4E4BA 50%, #D4AF37 100%)', color: '#1A1A1A' }}
+                style={{ background: 'linear-gradient(135deg, #EC4899 0%, #FBCFE8 50%, #EC4899 100%)', color: '#1A1A1A' }}
               >
                 今すぐ会員登録して予約する
               </button>
             </div>
 
             {/* Decorative Elements */}
-            <div className="absolute top-4 right-4 w-24 h-24 opacity-10" style={{ background: 'radial-gradient(circle, #D4AF37 0%, transparent 70%)' }}></div>
-            <div className="absolute bottom-4 left-4 w-16 h-16 opacity-10" style={{ background: 'radial-gradient(circle, #D4AF37 0%, transparent 70%)' }}></div>
+            <div className="absolute top-4 right-4 w-24 h-24 opacity-10" style={{ background: 'radial-gradient(circle, #EC4899 0%, transparent 70%)' }}></div>
+            <div className="absolute bottom-4 left-4 w-16 h-16 opacity-10" style={{ background: 'radial-gradient(circle, #EC4899 0%, transparent 70%)' }}></div>
           </div>
         </section>
 
@@ -642,16 +642,16 @@ export default function StudentCouncilPage() {
           style={{ background: 'linear-gradient(135deg, #4A4A4A 0%, #2D2D2D 50%, #1A1A1A 100%)' }}
         >
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-            <path d="M2 17L5 8L9 12L12 4L15 12L19 8L22 17H2Z" fill="url(#crownGradient)" stroke="#B4A078" strokeWidth="1.5" strokeLinejoin="round" />
-            <path d="M3 20H21" stroke="#B4A078" strokeWidth="2" strokeLinecap="round" />
-            <circle cx="12" cy="6" r="1" fill="#D4C4A0" />
-            <circle cx="5" cy="10" r="0.8" fill="#D4C4A0" />
-            <circle cx="19" cy="10" r="0.8" fill="#D4C4A0" />
+            <path d="M2 17L5 8L9 12L12 4L15 12L19 8L22 17H2Z" fill="url(#crownGradient)" stroke="#DB2777" strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M3 20H21" stroke="#DB2777" strokeWidth="2" strokeLinecap="round" />
+            <circle cx="12" cy="6" r="1" fill="#F9A8D4" />
+            <circle cx="5" cy="10" r="0.8" fill="#F9A8D4" />
+            <circle cx="19" cy="10" r="0.8" fill="#F9A8D4" />
             <defs>
               <linearGradient id="crownGradient" x1="2" y1="4" x2="22" y2="20">
-                <stop offset="0%" stopColor="#D4C4A0" />
-                <stop offset="50%" stopColor="#B4A078" />
-                <stop offset="100%" stopColor="#8B7355" />
+                <stop offset="0%" stopColor="#F9A8D4" />
+                <stop offset="50%" stopColor="#DB2777" />
+                <stop offset="100%" stopColor="#BE185D" />
               </linearGradient>
             </defs>
           </svg>
@@ -699,7 +699,7 @@ export default function StudentCouncilPage() {
               <div className="bg-white px-4 py-3 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                    <span className="text-lg">👑</span>
+                    <span className="text-lg">🎀</span>
                   </div>
                   <div>
                     <p className="font-bold text-sm">アイドル学園 生徒会長</p>
@@ -725,7 +725,7 @@ export default function StudentCouncilPage() {
                       {msg.type === 'bot' && (
                         <div className="flex gap-2">
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center flex-shrink-0">
-                            <span className="text-sm">👑</span>
+                            <span className="text-sm">🎀</span>
                           </div>
                           <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-3 max-w-[75%] shadow-sm">
                             <p className="text-sm whitespace-pre-line">{msg.content}</p>
@@ -746,10 +746,10 @@ export default function StudentCouncilPage() {
                       {msg.type === 'menu' && (
                         <div className="flex gap-2 pl-10">
                           <button onClick={() => handleMenuSelect('availability')} className="bg-white border border-pink-200 text-pink-500 rounded-full px-4 py-2 text-sm font-medium shadow-sm hover:bg-pink-50 transition">
-                            📅 出勤状況
+                            📅 登校状況
                           </button>
                           <button onClick={() => handleMenuSelect('search')} className="bg-white border border-pink-200 text-pink-500 rounded-full px-4 py-2 text-sm font-medium shadow-sm hover:bg-pink-50 transition">
-                            🔍 キャスト検索
+                            🔍 生徒検索
                           </button>
                         </div>
                       )}
@@ -767,7 +767,7 @@ export default function StudentCouncilPage() {
                             >
                               <div className="flex">
                                 <div className="w-24 h-32 bg-gradient-to-b from-gray-100 to-gray-200 flex items-center justify-center">
-                                  <span className="text-4xl">👸</span>
+                                  <span className="text-4xl">👧</span>
                                 </div>
                                 <div className="flex-1 p-3 flex flex-col justify-between">
                                   <div>
@@ -848,7 +848,7 @@ export default function StudentCouncilPage() {
                             <p className="font-bold text-sm mb-3 text-center">ご予約内容の確認</p>
                             <div className="space-y-2 text-sm border-b border-gray-100 pb-3 mb-3">
                               <div className="flex justify-between">
-                                <span className="text-gray-500">セラピスト</span>
+                                <span className="text-gray-500">担当生徒</span>
                                 <span className="font-medium">{msg.data.cast.name}</span>
                               </div>
                               <div className="flex justify-between">
@@ -861,7 +861,7 @@ export default function StudentCouncilPage() {
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-500">場所</span>
-                                <span className="font-medium">秋葉原ルーム</span>
+                                <span className="font-medium">アイドル学園 秋葉原校</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-500">電話番号</span>
@@ -880,7 +880,7 @@ export default function StudentCouncilPage() {
                                 onClick={() => handleConfirm(true)}
                                 disabled={isSubmitting}
                                 className="w-full py-3 rounded-xl font-bold text-sm transition active:scale-95 disabled:opacity-50"
-                                style={{ background: 'linear-gradient(135deg, #D4AF37, #F4E4BA, #D4AF37)', color: '#1A1A1A' }}
+                                style={{ background: 'linear-gradient(135deg, #EC4899, #FBCFE8, #EC4899)', color: '#1A1A1A' }}
                               >
                                 会員登録して2,000ptを使う
                               </button>
@@ -900,7 +900,7 @@ export default function StudentCouncilPage() {
                       {msg.type === 'submit' && (
                         <div className="flex gap-2">
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center flex-shrink-0">
-                            <span className="text-sm">👑</span>
+                            <span className="text-sm">🎀</span>
                           </div>
                           <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
                             <div className="flex items-center gap-2">
@@ -916,7 +916,7 @@ export default function StudentCouncilPage() {
                         <div className="pl-10">
                           <div className="bg-gradient-to-r from-amber-900/90 to-gray-900 rounded-xl p-4 shadow-lg border border-amber-700/30">
                             <div className="flex items-center gap-3 mb-3">
-                              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #D4AF37, #F4E4BA)' }}>
+                              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #EC4899, #FBCFE8)' }}>
                                 <span className="animate-pulse">⏳</span>
                               </div>
                               <div>
@@ -952,7 +952,7 @@ export default function StudentCouncilPage() {
                               <button
                                 onClick={() => handleProposalResponse(true, msg.data.new_time)}
                                 className="flex-1 py-2 rounded-lg text-sm font-bold transition active:scale-95"
-                                style={{ background: 'linear-gradient(135deg, #D4AF37, #F4E4BA)', color: '#1A1A1A' }}
+                                style={{ background: 'linear-gradient(135deg, #EC4899, #FBCFE8)', color: '#1A1A1A' }}
                               >
                                 承諾する
                               </button>
