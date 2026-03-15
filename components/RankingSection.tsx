@@ -17,11 +17,16 @@ export default function RankingSection() {
         const data = await res.json()
         const castsArray = Array.isArray(data) ? data : (data.casts || data.data || [])
         
-        // ランキング用にトップの3人を抽出（本来はPV等のソートですが今回は新着・上位枠として先頭3名）
-        const topCasts = castsArray.slice(0, 3).map((cast: any, index: number) => ({
-          ...cast,
-          ranking_order: index + 1
-        }))
+        // ランキング用にトップの3人を指定（1位: いちご, 2位: らん, 3位: 麗蘭）
+        const rankingIds = [1254, 1293, 463];
+        const topCasts = rankingIds.map((targetId, index) => {
+          const matchedCast = castsArray.find((c: any) => Number(c.id) === targetId);
+          if (!matchedCast) return null;
+          return {
+            ...matchedCast,
+            ranking_order: index + 1
+          };
+        }).filter(Boolean);
         
         setGirls(topCasts)
       } catch (err) {
