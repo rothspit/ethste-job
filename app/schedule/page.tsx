@@ -54,18 +54,32 @@ export default function SchedulePage() {
     if (!active) return
     let ignore = false
     setLoading(true)
-    supabase
-      .from('schedules')
-      .select('*, girls(*)')
-      .eq('date', dateStr)
-      .eq('status', 'working')
-      .order('start_time', { ascending: true })
-      .then(({ data }) => {
+
+    const fetchSchedules = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_CRM_API_URL}/idol/schedules?store_id=2&date=${dateStr}`, {
+          cache: 'no-store'
+        })
+        if (!res.ok) throw new Error('Failed to fetch schedules')
+        
+        const json = await res.json()
+        const dayData = json.schedules && json.schedules.length > 0 ? json.schedules[0] : null
+        const scheduledCasts = dayData ? dayData.casts : []
+        
         if (!ignore) {
-          setCasts(data?.filter((s: any) => s.girls) ?? [])
+          setCasts(scheduledCasts)
           setLoading(false)
         }
-      })
+      } catch (err) {
+        if (!ignore) {
+          console.error(err)
+          setCasts([])
+          setLoading(false)
+        }
+      }
+    }
+
+    fetchSchedules()
     return () => { ignore = true }
   }, [dateStr, active])
 
@@ -166,12 +180,11 @@ export default function SchedulePage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {casts.map((s) => {
-              const g = s.girls
+            {casts.map((g: any) => {
               return (
                 <Link
-                  key={s.id}
-                  href={`/girls/${g.id}`}
+                  key={`schedule-${g.id}`}
+                  href={`/girls/${g.cast_id}`}
                   className="flex items-center gap-3 bg-white rounded-xl p-3 border border-slate-100 shadow-sm active:scale-[0.98] transition-transform"
                 >
                   <div className="w-16 h-16 rounded-full overflow-hidden bg-slate-200 shrink-0 border-2 border-white shadow">
@@ -188,7 +201,7 @@ export default function SchedulePage() {
                     </div>
                     <div className="inline-flex items-center gap-1 bg-pink-50 border border-pink-200 px-2.5 py-1 rounded-full">
                       <span className="text-xs font-black text-pink-600">
-                        {time(s.start_time)} ~ {time(s.end_time)}
+                        {time(g.start_time)} ~ {time(g.end_time)}
                       </span>
                     </div>
                   </div>

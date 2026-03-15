@@ -124,8 +124,8 @@ export default function ScheduleSection() {
 
           return (
             <Link
-              href={`/girls/${girl.id}`}
-              key={girl.id}
+              href={`/girls/${girl.cast_id}`}
+              key={`schedule-${girl.id}`}
               className={`block relative rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all active:scale-[0.98] aspect-[4/5] bg-pink-50 group border border-pink-100 ${status.type === 'full' ? 'opacity-70 grayscale' : ''}`}
             >
               {/* 背景画像 */}
