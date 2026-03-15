@@ -118,87 +118,60 @@ export default function GirlDetailPage() {
         <span className="font-bold text-slate-800">{girl?.name}</span>
       </div>
 
-      {/* 2. 画像スライダー (Swipeable Carousel) */}
-      <div className="w-full max-w-sm mx-auto my-8 px-2">
-        <div 
-          className="relative rounded-2xl overflow-hidden shadow-xl border border-white/50 bg-white"
-        >
-          {allImages.length > 0 ? (
-            <div 
-              className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide w-full h-auto aspect-[3/4]"
-              onScroll={(e) => {
-                const target = e.target as HTMLDivElement;
-                const index = Math.round(target.scrollLeft / target.clientWidth);
-                setCurrentSlide(index);
-              }}
-            >
-              {allImages.map((img: string, i: number) => (
-                <div key={i} className="min-w-full w-full h-full snap-center relative shrink-0">
-                  <img
-                    src={img}
-                    alt={`${girl?.name || ''} ${i + 1}`}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                  {/* 画像の上に名前を重ねておしゃれに（最初の1枚目だけ出すか、全部に出すかはお好み 今回は全部に出す） */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6 pt-12 z-10 pointer-events-none">
-                    <h1 className="text-2xl font-bold text-white shadow-sm">
-                      {girl?.name}
-                    </h1>
-                    <p className="text-white/80 text-sm">{girl?.age ? `${girl.age}歳` : ''}</p>
-                    {girl?.is_attending && (
-                      <div className="inline-flex items-center gap-1 bg-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse shadow-lg border border-pink-400 mt-2">
-                        <span className="w-2 h-2 bg-white rounded-full"></span>
-                        本日出勤中！
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="w-full aspect-[3/4] bg-slate-100 flex items-center justify-center text-slate-400">
-              No Image
-            </div>
-          )}
-
-          {/* ドットインジケーター */}
-          {allImages.length > 1 && (
-            <div className="absolute top-4 left-0 right-0 flex justify-center gap-1.5 z-10 pointer-events-none">
-              {allImages.map((_: string, i: number) => (
-                <div
-                  key={i}
-                  className={`h-1 rounded-full transition-all shadow-sm ${i === currentSlide ? 'bg-white w-6 opacity-100' : 'bg-white/50 w-2 opacity-70'}`}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* 枚数表示 */}
-          {allImages.length > 1 && (
-            <div className="absolute top-3 right-3 bg-black/40 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm z-10 pointer-events-none">
-              {currentSlide + 1} / {allImages.length}
-            </div>
-          )}
-        </div>
-
-        {/* サムネイル一覧 */}
-        {allImages.length > 1 && (
-          <div className="flex gap-1.5 mt-3 justify-center overflow-x-auto px-2 scrollbar-hide snap-x">
+      {/* 2. 画像スライダー (Swipeable Carousel - Partial view) */}
+      <div className="w-full mx-auto my-6 px-4">
+        {allImages.length > 0 ? (
+          <div 
+            className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 scrollbar-hide w-full"
+            onScroll={(e) => {
+              const target = e.target as HTMLDivElement;
+              // Assuming roughly 85% width per item, plus gap
+              const itemWidth = target.scrollWidth / allImages.length;
+              const index = Math.round(target.scrollLeft / itemWidth);
+              setCurrentSlide(index);
+            }}
+          >
             {allImages.map((img: string, i: number) => (
-              <div
-                key={i}
-                className={`w-12 h-14 rounded-lg overflow-hidden shrink-0 snap-center border-2 transition-all ${i === currentSlide ? 'border-pink-500 ring-1 ring-pink-300 scale-110' : 'border-transparent opacity-60'}`}
-              >
-                <img src={img} className="w-full h-full object-cover" alt="" />
+              <div key={i} className="flex-none w-[85%] sm:w-[60%] snap-center relative shrink-0 aspect-[3/4] rounded-2xl overflow-hidden shadow-lg border border-white/50 bg-white">
+                <img
+                  src={img}
+                  alt={`${girl?.name || ''} ${i + 1}`}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                
+                {/* 画像の上に名前を重ねておしゃれに */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-5 pt-12 z-10 pointer-events-none">
+                  <h1 className="text-2xl font-bold text-white shadow-sm drop-shadow-md">
+                    {girl?.name}
+                  </h1>
+                  <div className="text-white/90 text-sm font-bold drop-shadow-md">{girl?.age ? `${girl.age}歳` : ''}</div>
+                  {girl?.is_attending && (
+                    <div className="inline-flex items-center gap-1 bg-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse shadow-lg border border-pink-400 mt-2">
+                      <span className="w-2 h-2 bg-white rounded-full"></span>
+                      本日出勤中！
+                    </div>
+                  )}
+                </div>
+
+                {/* 枚数表示 */}
+                {allImages.length > 1 && (
+                  <div className="absolute top-3 right-3 bg-black/50 text-white text-[10px] font-bold px-3 py-1 rounded-full backdrop-blur-sm z-10 pointer-events-none">
+                    {i + 1} / {allImages.length}
+                  </div>
+                )}
               </div>
             ))}
+          </div>
+        ) : (
+          <div className="w-full max-w-sm mx-auto aspect-[3/4] bg-slate-100 flex items-center justify-center text-slate-400 rounded-2xl">
+            No Image
           </div>
         )}
       </div>
 
       {/* 2.5 プロフィール動画 */}
       {girl.profile_video_path && (
-        <div className="w-full max-w-sm mx-auto mb-8 mt-4 px-2">
+        <div className="w-full max-w-sm mx-auto mb-8 px-4">
           <video 
             src={girl.profile_video_path} 
             autoPlay 
@@ -210,22 +183,22 @@ export default function GirlDetailPage() {
         </div>
       )}
 
-      <div className="max-w-xl mx-auto px-4 -mt-6 relative z-10 space-y-6">
+      <div className="max-w-xl mx-auto px-4 relative z-10 space-y-6">
 
         {/* 3. 本日の出勤時間（最重要！） */}
         <div className="bg-white rounded-2xl shadow-xl p-5 text-center transform transition-transform border border-slate-100 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 to-purple-500"></div>
-          <p className="text-xs font-bold text-slate-400 mb-1 tracking-widest uppercase">Today's Schedule</p>
+          <div className="text-xs font-bold text-slate-400 mb-1 tracking-widest uppercase">Today's Schedule</div>
           <div className="flex items-center justify-center gap-2">
             <span className="text-2xl animate-bounce">⏰</span>
-            <p className="text-3xl font-black text-slate-800 tracking-tight">
+            <div className="text-3xl font-black text-slate-800 tracking-tight">
               {girl.today_hours || <span className="text-slate-400 text-xl">時間未定</span>}
-            </p>
+            </div>
           </div>
           {girl.today_hours && (
-            <p className="text-[10px] text-red-500 font-bold mt-2 bg-red-50 inline-block px-2 py-1 rounded">
+            <div className="text-[10px] text-red-500 font-bold mt-2 bg-red-50 inline-block px-2 py-1 rounded">
               ※人気のため早めのご予約をおすすめします
-            </p>
+            </div>
           )}
         </div>
 
@@ -260,18 +233,18 @@ export default function GirlDetailPage() {
           {/* スリーサイズ */}
           <div className="bg-slate-50 rounded-xl p-3 grid grid-cols-3 gap-2 text-center mb-4">
             <div>
-              <p className="text-[10px] font-bold text-slate-400">BUST</p>
-              <p className="font-black text-slate-700 text-lg">
+              <div className="text-[10px] font-bold text-slate-400">BUST</div>
+              <div className="font-black text-slate-700 text-lg">
                 {girl.bust || '-'} <span className="text-xs font-normal text-slate-500">({girl.cup || '-'})</span>
-              </p>
+              </div>
             </div>
             <div className="border-x border-slate-200">
-              <p className="text-[10px] font-bold text-slate-400">WAIST</p>
-              <p className="font-black text-slate-700 text-lg">{girl.waist || '-'}</p>
+              <div className="text-[10px] font-bold text-slate-400">WAIST</div>
+              <div className="font-black text-slate-700 text-lg">{girl.waist || '-'}</div>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400">HIP</p>
-              <p className="font-black text-slate-700 text-lg">{girl.hip || '-'}</p>
+              <div className="text-[10px] font-bold text-slate-400">HIP</div>
+              <div className="font-black text-slate-700 text-lg">{girl.hip || '-'}</div>
             </div>
           </div>
 
@@ -332,7 +305,7 @@ export default function GirlDetailPage() {
           {/* 特徴タグ */}
           {girl.tags && girl.tags.length > 0 && (
             <div className="mt-4">
-              <p className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wide">Features</p>
+              <div className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wide">Features</div>
               <div className="flex flex-wrap gap-2">
                 {girl.tags.map((tag: string) => (
                   <span
@@ -342,7 +315,7 @@ export default function GirlDetailPage() {
                     {tag}
                   </span>
                 ))}
-              </div>
+            </div>
             </div>
           )}
         </div>
@@ -353,9 +326,9 @@ export default function GirlDetailPage() {
             <div className="absolute -top-3 left-6 bg-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full">
               MESSAGE
             </div>
-            <p className="text-slate-800 leading-relaxed whitespace-pre-wrap font-medium">
+            <div className="text-slate-800 leading-relaxed whitespace-pre-wrap font-medium">
               {girl.message}
-            </p>
+            </div>
             <div className="text-right mt-2 text-pink-400 text-sm">
               From {girl.name}
             </div>
@@ -372,49 +345,49 @@ export default function GirlDetailPage() {
               {girl.q_hobby && (
                 <div className="border-b border-slate-100 pb-3">
                   <span className="text-xs font-bold text-blue-400 block mb-1">Q. 趣味・特技は？</span>
-                  <p className="text-sm text-slate-700">{girl.q_hobby}</p>
+                  <div className="text-sm text-slate-700">{girl.q_hobby}</div>
                 </div>
               )}
               {girl.q_type && (
                 <div className="border-b border-slate-100 pb-3">
                   <span className="text-xs font-bold text-pink-400 block mb-1">Q. 好きなタイプは？</span>
-                  <p className="text-sm text-slate-700">{girl.q_type}</p>
+                  <div className="text-sm text-slate-700">{girl.q_type}</div>
                 </div>
               )}
               {girl.q_fetish && (
                 <div className="border-b border-slate-100 pb-3">
                   <span className="text-xs font-bold text-purple-400 block mb-1">Q. 実は〇〇フェチです</span>
-                  <p className="text-sm text-slate-700">{girl.q_fetish}</p>
+                  <div className="text-sm text-slate-700">{girl.q_fetish}</div>
                 </div>
               )}
               {girl.q_sensitive && (
                 <div className="border-b border-slate-100 pb-3">
                   <span className="text-xs font-bold text-red-400 block mb-1">Q. 感じやすいところは？</span>
-                  <p className="text-sm text-slate-700">{girl.q_sensitive}</p>
+                  <div className="text-sm text-slate-700">{girl.q_sensitive}</div>
                 </div>
               )}
               {girl.q_play && (
                 <div className="border-b border-slate-100 pb-3">
                   <span className="text-xs font-bold text-orange-400 block mb-1">Q. 得意プレイは？</span>
-                  <p className="text-sm text-slate-700">{girl.q_play}</p>
+                  <div className="text-sm text-slate-700">{girl.q_play}</div>
                 </div>
               )}
               {girl.q_first_time && (
                 <div className="border-b border-slate-100 pb-3">
                   <span className="text-xs font-bold text-green-500 block mb-1">Q. 初めてのお客様に一言</span>
-                  <p className="text-sm text-slate-700">{girl.q_first_time}</p>
+                  <div className="text-sm text-slate-700">{girl.q_first_time}</div>
                 </div>
               )}
               {girl.q_off_day && (
                 <div className="border-b border-slate-100 pb-3">
                   <span className="text-xs font-bold text-cyan-500 block mb-1">Q. お休みの日は何してる？</span>
-                  <p className="text-sm text-slate-700">{girl.q_off_day}</p>
+                  <div className="text-sm text-slate-700">{girl.q_off_day}</div>
                 </div>
               )}
               {girl.q_dream && (
                 <div>
                   <span className="text-xs font-bold text-amber-500 block mb-1">Q. 将来の夢は？</span>
-                  <p className="text-sm text-slate-700">{girl.q_dream}</p>
+                  <div className="text-sm text-slate-700">{girl.q_dream}</div>
                 </div>
               )}
             </div>
@@ -450,16 +423,16 @@ export default function GirlDetailPage() {
                        </span>
                     </div>
                   </div>
-                  <p className="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-pink-500 transition">
+                  <div className="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-pink-500 transition">
                     {diary.title}
-                  </p>
+                  </div>
                 </Link>
               ))}
             </div>
           ) : (
-            <p className="text-gray-400 text-sm text-center py-8 bg-gray-50 rounded-xl">
+            <div className="text-gray-400 text-sm text-center py-8 bg-gray-50 rounded-xl">
               まだ投稿がありません
-            </p>
+            </div>
           )}
 
           {/* 「もっと見る」ボタンで一覧ページへ誘導 */}
