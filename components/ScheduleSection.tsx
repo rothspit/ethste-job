@@ -35,7 +35,9 @@ export default function ScheduleSection() {
     async function getGirlsByDate() {
       setLoading(true)
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_CRM_API_URL}/idol/schedules?store_id=2&date=${selectedDate}`)
+        const res = await fetch(`${process.env.NEXT_PUBLIC_CRM_API_URL}/idol/schedules?store_id=2&date=${selectedDate}`, {
+          cache: 'no-store'
+        })
         if (!res.ok) throw new Error('Failed to fetch schedules from CRM')
 
         const json = await res.json()
@@ -168,15 +170,15 @@ export default function ScheduleSection() {
                 </div>
 
                 <div className="flex items-baseline justify-between mb-0.5 mt-auto">
-                  <h3 className="font-black text-white text-lg drop-shadow-md truncate pr-1">{girl.name}</h3>
+                  <div className="font-black text-white text-lg drop-shadow-md truncate pr-1">{girl.name}</div>
                   <span className="text-[10px] font-bold text-pink-100 drop-shadow-md shrink-0 bg-black/30 px-1.5 py-0.5 rounded">{girl.age}歳</span>
                 </div>
                 
                 {/* コメント表示 */}
                 {girl.comment && status.type !== 'full' && (
-                  <p className="text-[10px] text-white/90 truncate font-medium drop-shadow-md mt-1 border-t border-white/20 pt-1">
+                  <div className="text-[10px] text-white/90 truncate font-medium drop-shadow-md mt-1 border-t border-white/20 pt-1">
                     {girl.comment}
-                  </p>
+                  </div>
                 )}
               </div>
             </Link>

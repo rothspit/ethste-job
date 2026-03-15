@@ -11,7 +11,9 @@ export default function DiarySection({ brandSlug, storeId = 2 }: { brandSlug?: s
     async function getDiaries() {
       try {
         const baseUrl = process.env.NEXT_PUBLIC_CRM_API_URL || 'https://crm.h-mitsu.com/api'
-        const res = await fetch(`${baseUrl}/idol/diaries?store_id=${storeId}`)
+        const res = await fetch(`${baseUrl}/idol/diaries?store_id=${storeId}`, {
+          cache: 'no-store'
+        })
         if (!res.ok) throw new Error('API Error')
         
         const data = await res.json()
