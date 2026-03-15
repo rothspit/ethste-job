@@ -3,17 +3,6 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Noto_Sans_JP } from 'next/font/google'
-import { createClient } from '@supabase/supabase-js'
-import ScheduleSection from '@/components/ScheduleSection'
-import RankingSection from '@/components/RankingSection'
-import PriceListIdol from '@/components/PriceListIdol'
-import CardPayment from '@/components/CardPayment'
-import DiarySection from '@/components/DiarySection'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 const baseFont = Noto_Sans_JP({
   weight: ['700', '900'],
@@ -21,49 +10,21 @@ const baseFont = Noto_Sans_JP({
   preload: false,
 })
 
-
-
-
+import ScheduleSection from '@/components/ScheduleSection'
+import RankingSection from '@/components/RankingSection'
+import PriceListIdol from '@/components/PriceListIdol'
+import CardPayment from '@/components/CardPayment'
+import DiarySection from '@/components/DiarySection'
 
 export default function FunabashiPage() {
   const [isVerified, setIsVerified] = useState(false)
-
-  // 実際のキャストデータ
-  const [realCasts, setRealCasts] = useState<any[]>([])
-  const [brandId, setBrandId] = useState<string | null>(null)
 
   useEffect(() => {
     const checkVerified = localStorage.getItem('age_verified')
     if (checkVerified === 'true') {
       setIsVerified(true)
     }
-
-    // ブランドIDを取得
-    const fetchBrand = async () => {
-      const { data } = await supabase.from('brands').select('id').eq('slug', 'idol-gakuen').single()
-      if (data) setBrandId(data.id)
-    }
-    fetchBrand()
   }, [])
-
-  // ブランドID取得後にキャストデータを取得
-  useEffect(() => {
-    if (!brandId) return
-    const fetchCasts = async () => {
-      const { data } = await supabase
-        .from('girls')
-        .select('*')
-        .eq('brand_id', brandId)
-        .eq('is_attending', true)
-        .order('ranking_order', { ascending: true })
-      if (data) {
-        setRealCasts(data)
-      }
-    }
-    fetchCasts()
-  }, [brandId])
-
-
 
   const jsonLd = {
     "@context": "https://schema.org",

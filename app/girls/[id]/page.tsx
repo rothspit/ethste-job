@@ -20,8 +20,9 @@ export default function GirlDetailPage() {
       try {
         const res = await fetch('https://crm.h-mitsu.com/api/idol/casts?store_id=2', { cache: 'no-store' });
         const data = await res.json();
-        // 一覧データの中から、URLのパラメータ(params.id)と一致するキャストを抽出
-        const currentGirl = data.casts ? data.casts.find((c: any) => c.id.toString() === params.id) : null;
+        // レスポンスの形に依存しない安全な配列抽出
+        const castsArray = Array.isArray(data) ? data : (data.casts || data.data || []);
+        const currentGirl = castsArray.find((c: any) => c.id.toString() === params.id);
 
         if (currentGirl) {
           setGirl(currentGirl);
@@ -203,6 +204,20 @@ export default function GirlDetailPage() {
           </div>
         )}
       </div>
+
+      {/* 2.5 プロフィール動画 */}
+      {girl.profile_video_path && (
+        <div className="w-full max-w-sm mx-auto mb-8 mt-4 px-2">
+          <video 
+            src={girl.profile_video_path} 
+            autoPlay 
+            loop 
+            muted 
+            playsInline 
+            className="w-full h-auto rounded-2xl shadow-xl border border-white/50 shadow-pink-500/10" 
+          />
+        </div>
+      )}
 
       <div className="max-w-xl mx-auto px-4 -mt-6 relative z-10 space-y-6">
 

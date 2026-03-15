@@ -78,7 +78,10 @@ export default async function GirlsListPage() {
 
                 <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 via-black/20 to-transparent p-2 text-white opacity-90 group-hover:opacity-100 transition-opacity">
                   <p className="font-bold text-base drop-shadow-md truncate">{girl.name} <span className="text-xs opacity-90 drop-shadow">({girl.age})</span></p>
-                  <p className="text-[10px] text-pink-200 font-medium drop-shadow-md mt-0.5 truncate">{getStatusText(girl)}</p>
+                  <p className="text-[10px] text-pink-200 font-medium drop-shadow-md mt-0.5 truncate flex items-center gap-1">
+                    {getStatusText(girl)}
+                    {girl.today_hours && <span className="bg-white/20 px-1 rounded-sm text-white drop-shadow-md">{girl.today_hours}</span>}
+                  </p>
                 </div>
               </Link>
             )
