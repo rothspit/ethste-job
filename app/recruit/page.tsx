@@ -6,7 +6,24 @@ export default function RecruitPage() {
       {/* ヘッダー */}
       <div className="bg-white p-4 shadow flex justify-between items-center sticky top-0 z-10">
         <h1 className="font-black text-pink-500 italic">IDOL GAKUEN RECRUIT</h1>
-        <Link href="/" className="text-xs bg-slate-800 text-white px-3 py-1 rounded">TOPへ</Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/recruit/staff"
+            className="text-[10px] font-bold text-indigo-700 underline underline-offset-2 hidden sm:inline"
+          >
+            スタッフ求人
+          </Link>
+          <Link href="/" className="text-xs bg-slate-800 text-white px-3 py-1 rounded">TOPへ</Link>
+        </div>
+      </div>
+
+      <div className="bg-indigo-50 border-b border-indigo-100 px-4 py-2 text-center">
+        <p className="text-xs text-slate-700">
+          店舗運営スタッフ（ドライバー・受付など）を別途募集 →{' '}
+          <Link href="/recruit/staff" className="font-bold text-indigo-700 underline">
+            スタッフ求人ページ
+          </Link>
+        </p>
       </div>
 
       {/* メインビジュアル */}
