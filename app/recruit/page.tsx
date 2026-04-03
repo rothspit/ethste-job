@@ -15,26 +15,26 @@ export default function RecruitPage() {
           船橋エリア<br/><span className="text-yellow-300">最高クラス</span>の待遇を。
         </h2>
         <p className="font-bold mb-8">未経験でも日給3万円〜スタート！<br/>あなたの夢を応援します。</p>
-        <Link href="/chat" className="inline-block bg-white text-pink-600 font-black text-lg px-8 py-4 rounded-full shadow-lg animate-pulse">
+        <a href="https://line.me/ti/p/Y_yyUiTXuW" target="_blank" rel="noopener noreferrer" className="inline-block bg-white text-pink-600 font-black text-lg px-8 py-4 rounded-full shadow-lg animate-pulse">
           LINEで簡単応募する 💬
-        </Link>
+        </a>
       </div>
 
       {/* ポイント */}
       <div className="max-w-4xl mx-auto p-4 grid md:grid-cols-3 gap-4 -mt-8">
         <div className="bg-white p-6 rounded-xl shadow-lg text-center">
           <div className="text-4xl mb-2">💰</div>
-          <h3 className="font-bold text-lg mb-2">全額日払いOK</h3>
+          <h3 className="font-bold text-lg mb-2">恋の全額日払いOK</h3>
           <p className="text-sm text-slate-500">急な出費でも安心。働いたその日がお給料日です。</p>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-lg text-center">
           <div className="text-4xl mb-2">🚗</div>
-          <h3 className="font-bold text-lg mb-2">完全送迎あり</h3>
+          <h3 className="font-bold text-lg mb-2">恋の完全送迎あり</h3>
           <p className="text-sm text-slate-500">行きも帰りも無料送迎。プライバシーもしっかり守ります。</p>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-lg text-center">
           <div className="text-4xl mb-2">👗</div>
-          <h3 className="font-bold text-lg mb-2">衣装・メイク貸出</h3>
+          <h3 className="font-bold text-lg mb-2">恋の衣装・メイク貸し出し</h3>
           <p className="text-sm text-slate-500">手ぶらで出勤OK！可愛い衣装を多数用意しています。</p>
         </div>
       </div>
