@@ -43,23 +43,23 @@ export default function RecruitPage() {
       <div className="max-w-2xl mx-auto mt-12 p-4">
         <h3 className="text-xl font-black text-slate-800 text-center mb-6">募集要項</h3>
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="w-full text-sm text-left">
+          <table className="w-full text-sm text-left text-slate-700">
             <tbody className="divide-y divide-slate-100">
               <tr>
-                <th className="bg-slate-50 p-4 font-bold text-slate-600 w-1/3">職種</th>
-                <td className="p-4">メンズエステ・リラクゼーション</td>
+                <th className="bg-slate-50 p-4 font-bold text-slate-700 w-1/3">職種</th>
+                <td className="p-4 font-medium">デリヘル・制服コスプレ（派遣）</td>
               </tr>
               <tr>
-                <th className="bg-slate-50 p-4 font-bold text-slate-600">資格</th>
-                <td className="p-4">18歳以上（高校生不可）<br/>未経験者大歓迎！</td>
+                <th className="bg-slate-50 p-4 font-bold text-slate-700">資格</th>
+                <td className="p-4 font-medium">18歳以上（高校生不可）<br/>未経験者大歓迎！</td>
               </tr>
               <tr>
-                <th className="bg-slate-50 p-4 font-bold text-slate-600">給与</th>
-                <td className="p-4">バック率 60%〜75%<br/>※各種ボーナスあり</td>
+                <th className="bg-slate-50 p-4 font-bold text-slate-700">給与</th>
+                <td className="p-4 font-medium">バック率 60%〜75%<br/>※各種ボーナスあり</td>
               </tr>
               <tr>
-                <th className="bg-slate-50 p-4 font-bold text-slate-600">時間</th>
-                <td className="p-4">11:00〜翌3:00<br/>※週1日・3時間〜OK</td>
+                <th className="bg-slate-50 p-4 font-bold text-slate-700">時間</th>
+                <td className="p-4 font-medium">11:00〜翌3:00<br/>※週1日・3時間〜OK</td>
               </tr>
             </tbody>
           </table>
