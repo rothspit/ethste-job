@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
+import { getBusinessToday } from '@/lib/business-date'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,10 +18,10 @@ function toDateStr(d: Date) {
 export default function SchedulePage() {
   const [tabs] = useState(() => {
     const arr: Date[] = []
+    const base = getBusinessToday()
     for (let i = 0; i < 7; i++) {
-      const d = new Date()
-      d.setHours(0, 0, 0, 0)
-      d.setDate(d.getDate() + i)
+      const d = new Date(base)
+      d.setDate(base.getDate() + i)
       arr.push(d)
     }
     return arr

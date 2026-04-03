@@ -2,17 +2,17 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { getBusinessToday } from '@/lib/business-date'
 
 export default function ScheduleSection() {
   const [girls, setGirls] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Generate next 7 days
+  // Generate next 7 days（起点は営業日: 朝8時で日付切替）
   const getDates = () => {
     const datesList = []
     const week = ['日', '月', '火', '水', '木', '金', '土']
-    const base = new Date()
-    base.setHours(0, 0, 0, 0)
+    const base = getBusinessToday()
     for (let i = 0; i < 7; i++) {
       const d = new Date(base)
       d.setDate(base.getDate() + i)

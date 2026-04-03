@@ -17,8 +17,8 @@ export default function RankingSection() {
         const data = await res.json()
         const castsArray = Array.isArray(data) ? data : (data.casts || data.data || [])
         
-        // ランキング用にトップの3人を指定（1位: いちご, 2位: らん, 3位: 麗蘭）
-        const rankingIds = [1254, 1293, 463];
+        // ランキング用の順位を指定（1位: いちご, 2位: れいら, 3位: なな）
+        const rankingIds = [1254, 21, 1255];
         const topCasts = rankingIds.map((targetId, index) => {
           const matchedCast = castsArray.find((c: any) => Number(c.id) === targetId);
           if (!matchedCast) return null;
@@ -45,7 +45,7 @@ export default function RankingSection() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h2 className="text-xl font-black text-center mb-6 text-pink-600 flex items-center justify-center gap-2">
-        <span className="text-pink-400 text-2xl">👑</span> 先月の人気ランキング
+        <span className="text-pink-400 text-2xl">👑</span> 3月分の人気ランキング
       </h2>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
