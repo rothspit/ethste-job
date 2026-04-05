@@ -117,7 +117,15 @@ export default function ScheduleSection() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {girls.length === 0 ? (
-           <div className="col-span-full py-10 text-center text-sm text-pink-400 font-bold bg-white rounded-3xl border border-pink-100 shadow-sm">現在、本日の出勤メンバーはいません</div>
+          <div className="col-span-full py-10 px-4 text-center bg-white rounded-3xl border border-pink-100 shadow-sm">
+            <>
+              <span className="font-bold text-lg text-pink-500">✨ 美少女たちが出勤検討中！ ✨</span>
+              <br />
+              <span className="text-sm mt-2 inline-block text-pink-400">
+                期待の新人美少女も続々入店を控えています♡
+              </span>
+            </>
+          </div>
         ) : girls.map((girl: any) => {
           const status = getStatus(girl.status)
           const imageUrl = getImageUrl(girl)
