@@ -147,5 +147,5 @@ export function getNominationYenFromCast(girl: Record<string, unknown>): {
   }
 }
 
-/** 「交通費 ¥1,000〜¥5,000」帯の概算に使う代表値（円） */
-export const IDOL_TRANSPORT_RANGE_MID_YEN = 3_000
+/** 交通費レンジ（概算）… UI で個別に選択 */
+export const IDOL_TRANSPORT_FEE_OPTIONS = [1_000, 2_000, 3_000, 4_000, 5_000] as const
