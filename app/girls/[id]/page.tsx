@@ -144,6 +144,14 @@ export default function GirlDetailPage() {
 
   const gallerySlides = buildGallerySlidesFromCast(girl as Record<string, unknown>)
 
+  const nextStartTime = (() => {
+    const raw = girl?.today_hours
+    if (typeof raw !== 'string') return null
+    const m = raw.match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/)
+    if (!m) return null
+    return m[1]
+  })()
+
   const goToSlide = (index: number) => {
     if (index < 0) setCurrentSlide(gallerySlides.length - 1)
     else if (index >= gallerySlides.length) setCurrentSlide(0)
@@ -285,9 +293,9 @@ export default function GirlDetailPage() {
               {girl.today_hours || <span className="text-slate-400 text-xl">時間未定</span>}
             </div>
           </div>
-          {girl.today_hours && (
-            <div className="text-[10px] text-red-500 font-bold mt-2 bg-red-50 inline-block px-2 py-1 rounded">
-              ※人気のため早めのご予約をおすすめします
+          {nextStartTime && (
+            <div className="text-[10px] font-bold mt-2 bg-pink-50 text-pink-700 inline-flex items-center gap-1 px-2 py-1 rounded border border-pink-100">
+              <span className="text-[11px]">✨</span> 次回 <span className="tabular-nums">{nextStartTime}</span> より
             </div>
           )}
         </div>
