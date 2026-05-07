@@ -1,9 +1,67 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 import Link from 'next/link'
 import { useParams, notFound } from 'next/navigation'
 import ReviewForm from '@/components/ReviewForm'
+import GirlPricingSectionIdol from '@/components/GirlPricingSectionIdol'
+
+type GallerySlide = { candidates: string[] }
+
+function buildGallerySlidesFromCast(girl: Record<string, unknown>): GallerySlide[] {
+  const pushUnique = (list: string[], u: unknown) => {
+    if (typeof u === 'string' && u.trim() && !list.includes(u)) list.push(u)
+  }
+  const primary: string[] = []
+  pushUnique(primary, girl.idol_image_path)
+  pushUnique(primary, girl.profile_image)
+  pushUnique(primary, girl.image)
+  const images = girl.images as string[] | undefined
+  if (images?.[0]) pushUnique(primary, images[0])
+  pushUnique(primary, girl.image1_url)
+
+  const rawGallery = girl.gallery_images
+  const gallery =
+    typeof rawGallery === 'string' ? JSON.parse(rawGallery || '[]') : rawGallery || []
+
+  const slides: GallerySlide[] = []
+  if (primary.length > 0) slides.push({ candidates: primary })
+  if (Array.isArray(gallery)) {
+    for (const u of gallery) {
+      if (typeof u === 'string' && u.trim()) slides.push({ candidates: [u] })
+    }
+  }
+  return slides
+}
+
+function GalleryImageWithFallback({
+  candidates,
+  alt,
+  className,
+}: {
+  candidates: string[]
+  alt: string
+  className?: string
+}) {
+  const [attempt, setAttempt] = useState(0)
+  if (attempt >= candidates.length) {
+    return (
+      <div
+        className={`absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-pink-50 to-slate-100 text-slate-400 text-xs p-4 text-center ${className ?? ''}`}
+      >
+        画像を準備中です
+      </div>
+    )
+  }
+  return (
+    <img
+      src={candidates[attempt]}
+      alt={alt}
+      className={className}
+      onError={() => setAttempt((n) => n + 1)}
+    />
+  )
+}
 
 export default function GirlDetailPage() {
   const params = useParams()
@@ -15,6 +73,7 @@ export default function GirlDetailPage() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [touchStart, setTouchStart] = useState<number | null>(null)
   const [debugContext, setDebugContext] = useState<any>(null)
+  const sliderRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -62,10 +121,28 @@ export default function GirlDetailPage() {
     fetchData()
   }, [params.id])
 
-  // 画像URLを取得するヘルパー関数
+  // 初期表示で「1枚目が左寄り」に見えるのを防ぐ（余白を作らず中央に寄せる）
+  useEffect(() => {
+    if (!girl) return
+    const slides = buildGallerySlidesFromCast(girl as Record<string, unknown>)
+    if (slides.length === 0) return
+    const el = sliderRef.current
+    if (!el) return
+    requestAnimationFrame(() => {
+      const firstItem = el.querySelector<HTMLElement>('[data-slider-item="0"]')
+      if (!firstItem) return
+      const left = firstItem.offsetLeft
+      const target = left - (el.clientWidth - firstItem.clientWidth) / 2
+      el.scrollTo({ left: Math.max(0, target), behavior: 'auto' })
+    })
+  }, [girl?.id])
+
+  // 画像URLを取得するヘルパー関数（一覧・関連キャスト用）
   const getImageUrl = (g: any) => {
     if (g.idol_image_path) return g.idol_image_path
+    if (g.profile_image) return g.profile_image
     if (g.images && g.images[0]) return g.images[0]
+    if (g.image) return g.image
     if (g.image1_url) return g.image1_url
     return null
   }
@@ -77,18 +154,11 @@ export default function GirlDetailPage() {
     return notFound()
   }
 
-  const allImages = [];
-  if (girl.idol_image_path) allImages.push(girl.idol_image_path);
-  else if (girl.image) allImages.push(girl.image);
-
-  const gallery = typeof girl.gallery_images === 'string' ? JSON.parse(girl.gallery_images || '[]') : (girl.gallery_images || []);
-  if (Array.isArray(gallery)) {
-    allImages.push(...gallery);
-  }
+  const gallerySlides = buildGallerySlidesFromCast(girl as Record<string, unknown>)
 
   const goToSlide = (index: number) => {
-    if (index < 0) setCurrentSlide(allImages.length - 1)
-    else if (index >= allImages.length) setCurrentSlide(0)
+    if (index < 0) setCurrentSlide(gallerySlides.length - 1)
+    else if (index >= gallerySlides.length) setCurrentSlide(0)
     else setCurrentSlide(index)
   }
 
@@ -120,23 +190,28 @@ export default function GirlDetailPage() {
 
       {/* 2. 画像スライダー (Swipeable Carousel - Partial view) */}
       <div className="w-full mx-auto my-6 px-4">
-        {allImages.length > 0 ? (
+        {gallerySlides.length > 0 ? (
           <div 
+            ref={sliderRef}
             className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 scrollbar-hide w-full"
             onScroll={(e) => {
               const target = e.target as HTMLDivElement;
               // Assuming roughly 85% width per item, plus gap
-              const itemWidth = target.scrollWidth / allImages.length;
+              const itemWidth = target.scrollWidth / gallerySlides.length;
               const index = Math.round(target.scrollLeft / itemWidth);
               setCurrentSlide(index);
             }}
           >
-            {allImages.map((img: string, i: number) => (
-              <div key={i} className="flex-none w-[85%] sm:w-[60%] snap-center relative shrink-0 aspect-[3/4] rounded-2xl overflow-hidden shadow-lg border border-white/50 bg-white">
-                <img
-                  src={img}
+            {gallerySlides.map((slide, i: number) => (
+              <div
+                key={`${girl.id}-slide-${i}-${slide.candidates[0] ?? i}`}
+                data-slider-item={String(i)}
+                className="flex-none w-[85%] sm:w-[60%] snap-center relative shrink-0 aspect-[3/4] rounded-2xl overflow-hidden shadow-lg border border-white/50 bg-white"
+              >
+                <GalleryImageWithFallback
+                  candidates={slide.candidates}
                   alt={`${girl?.name || ''} ${i + 1}`}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover object-center"
                 />
                 
                 {/* 画像の上に名前を重ねておしゃれに */}
@@ -154,9 +229,9 @@ export default function GirlDetailPage() {
                 </div>
 
                 {/* 枚数表示 */}
-                {allImages.length > 1 && (
+                {gallerySlides.length > 1 && (
                   <div className="absolute top-3 right-3 bg-black/50 text-white text-[10px] font-bold px-3 py-1 rounded-full backdrop-blur-sm z-10 pointer-events-none">
-                    {i + 1} / {allImages.length}
+                    {i + 1} / {gallerySlides.length}
                   </div>
                 )}
               </div>
@@ -319,6 +394,9 @@ export default function GirlDetailPage() {
             </div>
           )}
         </div>
+
+        {/* 5.5 料金表 + 概算 */}
+        <GirlPricingSectionIdol girl={girl as Record<string, unknown>} />
 
         {/* 6. 本人からのメッセージ */}
         {girl.message && (
@@ -493,7 +571,7 @@ export default function GirlDetailPage() {
                   <Link href={`/girls/${other.id}`} key={other.id} className="block group">
                     <div className="aspect-[3/4] rounded-lg overflow-hidden bg-slate-200 mb-1 relative">
                       {otherImage ? (
-                        <img src={otherImage} className="w-full h-full object-cover group-hover:scale-105 transition-transform"/>
+                        <img src={otherImage} className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform"/>
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400">No Img</div>
                       )}

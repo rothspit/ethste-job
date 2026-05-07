@@ -35,20 +35,42 @@ export default function ScheduleSection() {
     async function getGirlsByDate() {
       setLoading(true)
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_CRM_API_URL}/idol/schedules?store_id=2&date=${selectedDate}`, {
-          cache: 'no-store'
-        })
-        if (!res.ok) throw new Error('Failed to fetch schedules from CRM')
+        const baseUrl = process.env.NEXT_PUBLIC_CRM_API_URL || 'https://crm.h-mitsu.com/api'
 
-        const json = await res.json()
-        
-        // Schedules endpoint returns an array of days inside `schedules`. 
+        // schedules API は年齢を返さないので、casts API で補完する
+        const [schedulesRes, castsRes] = await Promise.all([
+          fetch(`${baseUrl}/idol/schedules?store_id=2&date=${selectedDate}`, { cache: 'no-store' }),
+          fetch(`${baseUrl}/idol/casts?store_id=2`, { cache: 'no-store' }),
+        ])
+
+        if (!schedulesRes.ok) throw new Error('Failed to fetch schedules from CRM')
+        if (!castsRes.ok) throw new Error('Failed to fetch casts from CRM')
+
+        const schedulesJson = await schedulesRes.json()
+        const castsJson = await castsRes.json()
+
+        const castsArray = Array.isArray(castsJson) ? castsJson : (castsJson.casts || castsJson.data || [])
+        const ageByCastId = new Map<number, number>()
+        for (const c of castsArray) {
+          const id = Number(c?.id)
+          const age = Number(c?.age)
+          if (Number.isFinite(id) && Number.isFinite(age)) {
+            ageByCastId.set(id, age)
+          }
+        }
+
+        // Schedules endpoint returns an array of days inside `schedules`.
         // We requested a specific date so we take the first item's casts.
-        const dayData = json.schedules && json.schedules.length > 0 ? json.schedules[0] : null
+        const dayData = schedulesJson.schedules && schedulesJson.schedules.length > 0 ? schedulesJson.schedules[0] : null
         const scheduledCasts = dayData ? dayData.casts : []
         
         const activeStatuses = ['出勤', '即案内可能', '待機中', '接客中']
-        const filtered = scheduledCasts.filter((c: any) => activeStatuses.includes(c.status))
+        const filtered = scheduledCasts
+          .filter((c: any) => activeStatuses.includes(c.status))
+          .map((c: any) => ({
+            ...c,
+            age: c?.age ?? ageByCastId.get(Number(c?.cast_id)),
+          }))
         setGirls(filtered)
       } catch (err) {
         console.error(err)
@@ -154,29 +176,9 @@ export default function ScheduleSection() {
                 <div className="w-full h-full flex items-center justify-center text-xs text-pink-300 bg-gradient-to-br from-pink-50 to-white font-bold">No Image</div>
               )}
 
-              {/* 即マーク */}
-              {status.type === 'immediate' && (
-                <div className="absolute top-2 left-2 flex items-center gap-1 z-20">
-                  <span className="relative flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-pink-500 border border-white"></span>
-                  </span>
-                </div>
-              )}
-
               {/* 下部グラデーションと情報 */}
               <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/70 via-black/20 to-transparent p-3 z-10 transition-colors group-hover:from-black/80">
                 
-                {/* ステータスバッジ */}
-                <div className="mb-1.5 flex flex-wrap gap-1">
-                  <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-black text-white shadow-sm ${
-                    status.type === 'immediate' ? 'bg-gradient-to-r from-pink-500 to-rose-400 animate-pulse' :
-                    status.type === 'full' ? 'bg-slate-400' : 'bg-white/90 text-pink-600 border border-pink-200'
-                  }`}>
-                    {status.text}
-                  </span>
-                </div>
-
                 <div className="flex items-baseline justify-between mb-0.5 mt-auto">
                   <div className="font-black text-white text-lg drop-shadow-md truncate pr-1">{girl.name}</div>
                   <span className="text-[10px] font-bold text-pink-100 drop-shadow-md shrink-0 bg-black/30 px-1.5 py-0.5 rounded">{girl.age}歳</span>

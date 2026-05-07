@@ -17,15 +17,6 @@ import CardPayment from '@/components/CardPayment'
 import DiarySection from '@/components/DiarySection'
 
 export default function FunabashiPage() {
-  const [isVerified, setIsVerified] = useState(false)
-
-  useEffect(() => {
-    const checkVerified = localStorage.getItem('age_verified')
-    if (checkVerified === 'true') {
-      setIsVerified(true)
-    }
-  }, [])
-
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -47,12 +38,6 @@ export default function FunabashiPage() {
         ]
       }
     ]
-  }
-
-  const handleVerify = () => {
-    localStorage.setItem('age_verified', 'true')
-    setIsVerified(true)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
@@ -94,45 +79,6 @@ export default function FunabashiPage() {
       `}</style>
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-
-      {/* 年齢確認モーダル */}
-      {!isVerified && (
-        <div className="fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-center p-4 overflow-y-auto">
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-0 left-0 w-full h-full bg-[url('/idol_top.jpg')] bg-cover bg-center opacity-20 blur-sm"></div>
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/90 to-black/60"></div>
-          </div>
-
-          <div className="relative z-10 w-full max-w-md bg-black/80 backdrop-blur-md border border-slate-700 p-6 rounded-2xl shadow-2xl text-center space-y-6">
-            <div>
-              <h1 className={`${baseFont.className} text-3xl font-black text-white tracking-widest mb-1`}>
-                IDOL <span className="text-pink-500">GAKUEN</span>
-              </h1>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">Funabashi Delivery Health</p>
-            </div>
-
-            <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
-              <h2 className="text-xl font-bold text-white mb-2">年齢確認</h2>
-              <p className="text-sm text-slate-300 leading-relaxed">
-                当サイトは風俗営業法に基づき運営されています。<br/>
-                <span className="text-pink-500 font-bold underline">18歳未満の方</span>のご利用は固くお断りします。
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <button onClick={handleVerify} className="w-full bg-gradient-to-r from-pink-600 to-purple-600 text-white font-black py-4 rounded-full shadow-lg hover:scale-[1.02] transition-transform text-lg flex items-center justify-center gap-2">
-                <span>ENTER</span>
-                <span className="text-xs bg-black/20 px-2 py-0.5 rounded font-normal">18歳以上です</span>
-              </button>
-              <a href="https://www.google.com" className="block text-xs text-slate-500 hover:text-slate-300 underline">いいえ (退室する)</a>
-            </div>
-
-            <div className="pt-4 border-t border-slate-800 text-[10px] text-slate-500 text-left">
-              船橋・西船橋・津田沼エリアのデリバリーヘルス「アイドル学園」。厳選された美女セラピストが最短30分で出張いたします。
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ヘッダー */}
       <div className="sticky top-0 z-40 bg-white/90 backdrop-blur text-pink-600 shadow-sm border-b border-pink-100">

@@ -3,9 +3,6 @@ import Image from 'next/image'
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-import { Noto_Sans_JP } from 'next/font/google'
-
-const baseFont = Noto_Sans_JP({ weight: ['700'], subsets: ['latin'], preload: false })
 
 async function getGirls() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_CRM_API_URL}/idol/casts?store_id=2`, {
@@ -25,9 +22,8 @@ export default async function GirlsListPage() {
   const girls = await getGirls()
 
   // CRM APIからのデータ構造に合わせて調整
-  const getImageUrl = (girl: any) => girl.idol_image_path || girl.image || null
+  const getImageUrl = (girl: any) => girl.idol_image_path || girl.profile_image || girl.image || null
   const getStatusText = (girl: any) => girl.status === '接客中' ? '💕 接客中' : girl.status === '待機中' || girl.status === '即案内可能' || !!girl.is_attending ? '✨ 即ご案内可能' : '💤 お休み中'
-  const isAttending = (girl: any) => girl.status !== 'お休み中' && girl.status !== '退店'
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
@@ -67,13 +63,6 @@ export default async function GirlsListPage() {
                   )
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs">No Img</div>
-                )}
-
-                {/* 出勤中の子だけバッジをつける */}
-                {isAttending(girl) && (
-                  <div className="absolute top-0 left-0">
-                     <span className="bg-[#ff0066] text-white text-[10px] font-bold px-2 py-1 shadow-md inline-block animate-pulse">本日出勤</span>
-                  </div>
                 )}
 
                 <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 via-black/20 to-transparent p-2 text-white opacity-90 group-hover:opacity-100 transition-opacity">
