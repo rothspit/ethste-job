@@ -5,7 +5,6 @@ import ScheduleSection from '@/components/ScheduleSection'
 import RankingSection from '@/components/RankingSection'
 import PriceListIdol from '@/components/PriceListIdol'
 import CardPayment from '@/components/CardPayment'
-import DiarySection from '@/components/DiarySection'
 
 const baseFont = Noto_Sans_JP({
   weight: ['700'],
@@ -40,9 +39,6 @@ export default function HomeContentPage() {
         {/* 出勤スケジュール */}
         <ScheduleSection />
       </div>
-
-      {/* 写メ日記セクション */}
-      <DiarySection brandSlug="idol-gakuen" />
 
       {/* 在籍一覧ボタン */}
       <div className="max-w-2xl mx-auto px-4 mb-6">

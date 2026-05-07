@@ -66,7 +66,6 @@ function GalleryImageWithFallback({
 export default function GirlDetailPage() {
   const params = useParams()
   const [girl, setGirl] = useState<any>(null)
-  const [diaries, setDiaries] = useState<any[]>([]) // 日記用
   const [reviews, setReviews] = useState<any[]>([]) // 口コミ用
   const [relatedGirls, setRelatedGirls] = useState<any[]>([]) // 関連キャスト用
   const [loading, setLoading] = useState(true)
@@ -93,17 +92,6 @@ export default function GirlDetailPage() {
         if (currentGirl) {
           setGirl(currentGirl);
           document.title = `${currentGirl?.name || 'キャスト'} | 船橋デリヘル アイドル学園`;
-
-          try {
-            const diariesRes = await fetch('https://crm.h-mitsu.com/api/idol/diaries?store_id=2', { cache: 'no-store' });
-            const diariesData = await diariesRes.json();
-            if (diariesData.diaries) {
-              const myDiaries = diariesData.diaries.filter((d: any) => d.cast_id.toString() === params.id);
-              setDiaries(myDiaries);
-            }
-          } catch (e) {
-            console.error('Failed to fetch diaries', e);
-          }
 
           setReviews([]);
 
@@ -498,55 +486,6 @@ export default function GirlDetailPage() {
             </div>
           </div>
         )}
-
-        {/* --- 📷 写メ日記 (修正版) --- */}
-        <div className="mb-12">
-          <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-            <span>📷</span> 写メ日記
-          </h2>
-
-          {diaries && diaries.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {diaries.map((diary) => (
-                <Link
-                  key={diary.id}
-                  href={`/diaries/${diary.id}`}
-                  className="block group cursor-pointer"
-                >
-                  <div className="aspect-square rounded-xl overflow-hidden mb-2 relative">
-                    {diary.images?.[0] || diary.image_url ? (
-                      <img
-                        src={diary.images?.[0] || diary.image_url}
-                        className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">No Image</div>
-                    )}
-                    <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/60 to-transparent p-2">
-                       <span className="text-white text-[10px] font-bold">
-                         {new Date(diary.created_at).toLocaleDateString()}
-                       </span>
-                    </div>
-                  </div>
-                  <div className="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-pink-500 transition">
-                    {diary.title}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="text-gray-400 text-sm text-center py-8 bg-gray-50 rounded-xl">
-              まだ投稿がありません
-            </div>
-          )}
-
-          {/* 「もっと見る」ボタンで一覧ページへ誘導 */}
-          <div className="text-center mt-6">
-            <Link href="/diaries" className="inline-block border border-gray-300 px-6 py-2 rounded-full text-sm font-bold text-gray-600 hover:bg-gray-100 transition">
-              みんなの写メ日記を見る →
-            </Link>
-          </div>
-        </div>
 
         {/* 8. 口コミセクション */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">

@@ -14,7 +14,6 @@ import ScheduleSection from '@/components/ScheduleSection'
 import RankingSection from '@/components/RankingSection'
 import PriceListIdol from '@/components/PriceListIdol'
 import CardPayment from '@/components/CardPayment'
-import DiarySection from '@/components/DiarySection'
 
 export default function FunabashiPage() {
   const jsonLd = {
@@ -96,8 +95,6 @@ export default function FunabashiPage() {
       <div className="pt-4">
         <ScheduleSection />
       </div>
-
-      <DiarySection brandSlug="idol-gakuen" />
 
       {/* 在籍一覧ボタン */}
       <div className="max-w-2xl mx-auto px-4 mb-6">
