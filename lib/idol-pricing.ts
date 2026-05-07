@@ -12,11 +12,11 @@ export type IdolCourseRow = {
 
 /** PriceListIdol / 店舗標準に基づくフォールバックカタログ（税込・円） */
 export const IDOL_CATALOG_COURSES: IdolCourseRow[] = [
-  { durationMinutes: 60, priceYen: 18_000, label: '基本授業' },
-  { durationMinutes: 80, priceYen: 22_000, label: '放課後デート' },
-  { durationMinutes: 100, priceYen: 26_000, label: '濃厚レッスン' },
-  { durationMinutes: 120, priceYen: 34_000, label: '秘密の合宿' },
-  { durationMinutes: 150, priceYen: 42_000, label: 'ロング留学' },
+  { durationMinutes: 60, priceYen: 18_000 },
+  { durationMinutes: 80, priceYen: 22_000 },
+  { durationMinutes: 100, priceYen: 26_000 },
+  { durationMinutes: 120, priceYen: 34_000 },
+  { durationMinutes: 150, priceYen: 42_000 },
   { durationMinutes: 180, priceYen: 50_000 },
   // ロング帯（標準表に無い分数は延長イメージで補完）
   { durationMinutes: 210, priceYen: 58_000 },

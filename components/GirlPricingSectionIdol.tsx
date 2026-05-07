@@ -45,32 +45,23 @@ export default function GirlPricingSectionIdol({ girl }: { girl: Record<string, 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="p-5 pb-0">
           <h2 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2 border-l-4 border-pink-500 pl-3">
-            <span className="text-pink-500">💰</span> 授業料（料金表）
+            <span className="text-pink-500">💰</span> 料金表
           </h2>
         </div>
-        <div className="divide-y divide-pink-50 border-t border-pink-100">
-          {effectiveRows.map((row) => (
-            <div
-              key={row.durationMinutes}
-              className="flex justify-between items-center px-5 py-3.5 hover:bg-pink-50/40 transition-colors gap-3"
-            >
-              <div className="min-w-0">
-                <span className="font-bold text-slate-700 text-sm">
-                  {row.label ? (
-                    <>
-                      <span className="block truncate">{row.label}</span>
-                      <span className="text-xs font-semibold text-slate-500">{row.durationMinutes}分</span>
-                    </>
-                  ) : (
-                    <span>{row.durationMinutes}分</span>
-                  )}
+        <div className="border-t border-pink-100 px-5 pb-5 pt-1">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-0">
+            {effectiveRows.map((row) => (
+              <div
+                key={row.durationMinutes}
+                className="flex justify-between items-center gap-2 py-3 border-b border-pink-50/90 hover:bg-pink-50/30 transition-colors"
+              >
+                <span className="font-bold text-slate-700 text-sm tabular-nums">{row.durationMinutes}分</span>
+                <span className="font-black text-base text-pink-600 shrink-0 tabular-nums">
+                  {formatYen(row.priceYen)}
                 </span>
               </div>
-              <span className="font-black text-lg text-pink-600 shrink-0 tabular-nums">
-                {formatYen(row.priceYen)}
-              </span>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
@@ -92,8 +83,7 @@ export default function GirlPricingSectionIdol({ girl }: { girl: Record<string, 
             >
               {effectiveRows.map((row) => (
                 <option key={row.durationMinutes} value={row.durationMinutes}>
-                  {row.label ? `${row.label}（${row.durationMinutes}分）` : `${row.durationMinutes}分`} —{' '}
-                  {formatYen(row.priceYen)}
+                  {row.durationMinutes}分 — {formatYen(row.priceYen)}
                 </option>
               ))}
             </select>

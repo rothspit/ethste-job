@@ -121,11 +121,11 @@ export default function GirlDetailPage() {
     fetchData()
   }, [params.id])
 
-  // 初期表示で「1枚目が左寄り」に見えるのを防ぐ（余白を作らず中央に寄せる）
+  // 複数枚時のみ：1枚目をビューポート中央にスクロール
   useEffect(() => {
     if (!girl) return
     const slides = buildGallerySlidesFromCast(girl as Record<string, unknown>)
-    if (slides.length === 0) return
+    if (slides.length <= 1) return
     const el = sliderRef.current
     if (!el) return
     requestAnimationFrame(() => {
@@ -188,9 +188,35 @@ export default function GirlDetailPage() {
         <span className="font-bold text-slate-800">{girl?.name}</span>
       </div>
 
-      {/* 2. 画像スライダー (Swipeable Carousel - Partial view) */}
+      {/* 2. メイン画像（1枚は中央配置、複数は横スクロール） */}
       <div className="w-full mx-auto my-6 px-4">
         {gallerySlides.length > 0 ? (
+          gallerySlides.length === 1 ? (
+            <div className="mx-auto w-full max-w-md">
+              <div
+                key={`${girl.id}-slide-0-${gallerySlides[0].candidates[0] ?? 0}`}
+                className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden shadow-lg border border-white/50 bg-white"
+              >
+                <GalleryImageWithFallback
+                  candidates={gallerySlides[0].candidates}
+                  alt={`${girl?.name || ''}`}
+                  className="absolute inset-0 w-full h-full object-cover object-center"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-5 pt-12 z-10 pointer-events-none">
+                  <h1 className="text-2xl font-bold text-white shadow-sm drop-shadow-md">
+                    {girl?.name}
+                  </h1>
+                  <div className="text-white/90 text-sm font-bold drop-shadow-md">{girl?.age ? `${girl.age}歳` : ''}</div>
+                  {girl?.is_attending && (
+                    <div className="inline-flex items-center gap-1 bg-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse shadow-lg border border-pink-400 mt-2">
+                      <span className="w-2 h-2 bg-white rounded-full"></span>
+                      本日出勤中！
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
           <div 
             ref={sliderRef}
             className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 scrollbar-hide w-full"
@@ -206,7 +232,7 @@ export default function GirlDetailPage() {
               <div
                 key={`${girl.id}-slide-${i}-${slide.candidates[0] ?? i}`}
                 data-slider-item={String(i)}
-                className="flex-none w-[85%] sm:w-[60%] snap-center relative shrink-0 aspect-[3/4] rounded-2xl overflow-hidden shadow-lg border border-white/50 bg-white"
+                className="flex-none w-[85%] sm:w-[60%] max-w-md snap-center relative shrink-0 aspect-[3/4] rounded-2xl overflow-hidden shadow-lg border border-white/50 bg-white"
               >
                 <GalleryImageWithFallback
                   candidates={slide.candidates}
@@ -237,6 +263,7 @@ export default function GirlDetailPage() {
               </div>
             ))}
           </div>
+          )
         ) : (
           <div className="w-full max-w-sm mx-auto aspect-[3/4] bg-slate-100 flex items-center justify-center text-slate-400 rounded-2xl">
             No Image
