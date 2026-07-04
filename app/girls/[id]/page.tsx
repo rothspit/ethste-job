@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useParams, notFound } from 'next/navigation'
 import ReviewForm from '@/components/ReviewForm'
 import GirlPricingSectionIdol from '@/components/GirlPricingSectionIdol'
+import { CRM_API_BASE, IDOL_STORE_ID } from '@/lib/crm-api'
 
 type GallerySlide = { candidates: string[] }
 
@@ -77,7 +78,7 @@ export default function GirlDetailPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch('https://crm.h-mitsu.com/api/idol/casts?store_id=2', { cache: 'no-store' });
+        const res = await fetch(`${CRM_API_BASE}/idol/casts?store_id=${IDOL_STORE_ID}`, { cache: 'no-store' });
         const data = await res.json();
         const castsArray = Array.isArray(data) ? data : (data.casts || data.data || []);
         

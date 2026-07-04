@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { supabaseTiara } from '@/lib/supabase-tiara'
 
 // チャットメッセージの型定義
 type MessageType = 'bot' | 'user' | 'card' | 'menu' | 'course' | 'time' | 'phone' | 'confirm' | 'submit' | 'complete' | 'waiting' | 'proposal'
@@ -79,43 +78,42 @@ export default function StudentCouncilPage() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // 予約ステータスのリアルタイム監視
+  // 予約ステータス（CRM poll）
   useEffect(() => {
-    if (!currentBookingId) return
+    if (!currentBookingId || !phoneNumber) return
 
-    const channel = supabaseTiara
-      .channel(`student-council-booking-${currentBookingId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'bookings',
-          filter: `id=eq.${currentBookingId}`,
-        },
-        (payload: any) => {
-          const newStatus = (payload.new as any).status
-          const proposalData = (payload.new as any).proposal_data
+    let cancelled = false
+    let lastStatus = 'pending'
 
-          if (newStatus === 'confirmed') {
-            addMessage('bot', '✨ ご予約が確定いたしました ✨\n\nお時間になりましたらお越しくださいませ。\nスタッフ一同、心よりお待ち申し上げております。')
-          } else if (newStatus === 'negotiating' && proposalData) {
-            addMessage('proposal', '', {
-              original_time: proposalData.original_time,
-              new_time: proposalData.new_time,
-              message: proposalData.message,
-            })
-          } else if (newStatus === 'rejected') {
-            addMessage('bot', '誠に申し訳ございませんが、ご希望のお時間でのご案内が難しい状況でございます。\n\n別のお時間をご検討いただけますと幸いでございます。')
-          }
+    const poll = async () => {
+      try {
+        const res = await fetch(
+          `/api/student-council/bookings/${currentBookingId}?phone=${encodeURIComponent(phoneNumber)}`,
+          { cache: 'no-store' },
+        )
+        if (!res.ok || cancelled) return
+        const data = await res.json()
+        const newStatus = data.status as string
+        if (newStatus === lastStatus) return
+        lastStatus = newStatus
+
+        if (newStatus === 'confirmed') {
+          addMessage('bot', '✨ ご予約が確定いたしました ✨\n\nお時間になりましたらお越しくださいませ。\nスタッフ一同、心よりお待ち申し上げております。')
+        } else if (newStatus === 'rejected') {
+          addMessage('bot', '誠に申し訳ございませんが、ご希望のお時間でのご案内が難しい状況でございます。\n\n別のお時間をご検討いただけますと幸いでございます。')
         }
-      )
-      .subscribe()
-
-    return () => {
-      supabaseTiara.removeChannel(channel)
+      } catch {
+        // ignore transient errors
+      }
     }
-  }, [currentBookingId])
+
+    poll()
+    const interval = setInterval(poll, 5000)
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
+  }, [currentBookingId, phoneNumber])
 
   // チャット初期化
   const initChat = () => {

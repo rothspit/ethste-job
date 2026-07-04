@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { fetchCrmBookingStatus } from '@/lib/crm-booking'
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+type Params = { params: Promise<{ id: string }> }
+
+export async function GET(request: NextRequest, { params }: Params) {
   const { id } = await params
   const orderId = parseInt(id, 10)
   const phone = new URL(request.url).searchParams.get('phone') || ''
@@ -19,16 +18,20 @@ export async function GET(
       id: String(orderId),
       status: status.status,
       order_status: status.order_status,
+      cast_name: status.cast_name,
+      start_time: status.start_time,
     })
   } catch {
     return NextResponse.json({ error: 'not_found' }, { status: 404 })
   }
 }
 
-export async function PATCH() {
-  return NextResponse.json({ success: true, message: 'CRMで確定してください' })
-}
-
-export async function DELETE() {
-  return NextResponse.json({ error: 'deprecated' }, { status: 410 })
+/** 顧客側の時間提案承諾など — CRM 確定は管理画面で行う */
+export async function PATCH(_request: NextRequest, { params }: Params) {
+  const { id } = await params
+  return NextResponse.json({
+    success: true,
+    id,
+    message: 'CRM管理画面で確定処理を行います',
+  })
 }

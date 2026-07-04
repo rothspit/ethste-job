@@ -1,13 +1,8 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { getBusinessToday } from '@/lib/business-date'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+import { CRM_API_BASE, IDOL_STORE_ID, idolWaitStatusBadge } from '@/lib/crm-api'
 
 const DAYS = ['日', '月', '火', '水', '木', '金', '土']
 
@@ -30,37 +25,22 @@ export default function SchedulePage() {
   const [selected, setSelected] = useState(0)
   const [casts, setCasts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [active, setActive] = useState<boolean | null>(null) // null=読み込み中
 
   const dateStr = toDateStr(tabs[selected])
+  const businessTodayStr = toDateStr(getBusinessToday())
+  const isTodayTab = dateStr === businessTodayStr
 
-  // ページ有効/無効チェック
+  // スケジュール取得（CRM pull）
   useEffect(() => {
-    supabase
-      .from('site_settings')
-      .select('value')
-      .eq('key', 'schedule_page')
-      .single()
-      .then(({ data, error }) => {
-        if (error || !data) {
-          setActive(false) // テーブル未作成 or 設定なし → 停止扱い
-        } else {
-          setActive(data.value?.active ?? false)
-        }
-      })
-  }, [])
-
-  // スケジュール取得（アクティブ時のみ）
-  useEffect(() => {
-    if (!active) return
     let ignore = false
     setLoading(true)
 
     const fetchSchedules = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_CRM_API_URL}/idol/schedules?store_id=2&date=${dateStr}`, {
-          cache: 'no-store'
-        })
+        const res = await fetch(
+          `${CRM_API_BASE}/idol/schedules?store_id=${IDOL_STORE_ID}&date=${dateStr}`,
+          { cache: 'no-store' },
+        )
         if (!res.ok) throw new Error('Failed to fetch schedules')
         
         const json = await res.json()
@@ -82,42 +62,11 @@ export default function SchedulePage() {
 
     fetchSchedules()
     return () => { ignore = true }
-  }, [dateStr, active])
+  }, [dateStr])
 
   const img = (g: any) => g.images?.[0] || g.image1_url || null
   const time = (t: string | null) => t ? t.substring(0, 5) : '--:--'
 
-  // 読み込み中
-  if (active === null) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-pink-200 border-t-pink-500 rounded-full animate-spin" />
-      </div>
-    )
-  }
-
-  // 停止中
-  if (!active) {
-    return (
-      <div className="min-h-screen bg-slate-50 pb-28">
-        <div className="bg-pink-600 text-white px-4 py-3 flex items-center justify-between">
-          <Link href="/funabashi" className="text-sm font-bold">&#8592; トップ</Link>
-          <h1 className="text-lg font-black">出勤スケジュール</h1>
-          <div className="w-12" />
-        </div>
-        <div className="flex flex-col items-center justify-center py-32 px-4">
-          <p className="text-5xl mb-4">&#x1F527;</p>
-          <p className="text-lg font-black text-slate-700 mb-2">現在準備中です</p>
-          <p className="text-sm text-slate-400 text-center">出勤スケジュール機能は現在メンテナンス中です。<br />しばらくお待ちください。</p>
-          <Link href="/funabashi" className="mt-8 bg-pink-500 text-white font-bold px-6 py-3 rounded-full shadow active:scale-95 transition-transform">
-            トップに戻る
-          </Link>
-        </div>
-      </div>
-    )
-  }
-
-  // アクティブ時
   return (
     <div className="min-h-screen bg-slate-50 pb-28">
 
@@ -182,13 +131,21 @@ export default function SchedulePage() {
         ) : (
           <div className="space-y-3">
             {casts.map((g: any) => {
+              const badge = idolWaitStatusBadge(g.wait_status, g.attend_end_time, isTodayTab)
               return (
                 <Link
                   key={`schedule-${g.id}`}
                   href={`/girls/${g.cast_id}`}
-                  className="flex items-center gap-3 bg-white rounded-xl p-3 border border-slate-100 shadow-sm active:scale-[0.98] transition-transform"
+                  className={`flex items-center gap-3 bg-white rounded-xl p-3 border border-slate-100 shadow-sm active:scale-[0.98] transition-transform ${badge?.dimCard ? 'opacity-60' : ''}`}
                 >
-                  <div className="w-16 h-16 rounded-full overflow-hidden bg-slate-200 shrink-0 border-2 border-white shadow">
+                  <div className="relative w-16 h-16 rounded-full overflow-hidden bg-slate-200 shrink-0 border-2 border-white shadow">
+                    {badge && (
+                      <span
+                        className={`absolute -top-1 -right-1 z-10 px-1.5 py-0.5 rounded-full text-[8px] leading-tight ${badge.className}`}
+                      >
+                        {badge.label}
+                      </span>
+                    )}
                     {img(g) ? (
                       <img src={img(g)} alt={g.name} className="w-full h-full object-cover" />
                     ) : (

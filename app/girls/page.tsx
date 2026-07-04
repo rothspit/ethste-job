@@ -1,11 +1,12 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { CRM_API_BASE, IDOL_STORE_ID } from '@/lib/crm-api'
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 async function getGirls() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_CRM_API_URL}/idol/casts?store_id=2`, {
+  const res = await fetch(`${CRM_API_BASE}/idol/casts?store_id=${IDOL_STORE_ID}`, {
     cache: 'no-store' // キャッシュを無効化（常に最新を取得）
   })
   

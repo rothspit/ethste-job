@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getBusinessToday } from '@/lib/business-date'
+import { CRM_API_BASE, IDOL_STORE_ID, idolWaitStatusBadge } from '@/lib/crm-api'
 
 export default function ScheduleSection() {
   const [girls, setGirls] = useState<any[]>([])
@@ -35,12 +36,12 @@ export default function ScheduleSection() {
     async function getGirlsByDate() {
       setLoading(true)
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_CRM_API_URL || 'https://crm.h-mitsu.com/api'
+        const baseUrl = CRM_API_BASE
 
         // schedules API は年齢を返さないので、casts API で補完する
         const [schedulesRes, castsRes] = await Promise.all([
-          fetch(`${baseUrl}/idol/schedules?store_id=2&date=${selectedDate}`, { cache: 'no-store' }),
-          fetch(`${baseUrl}/idol/casts?store_id=2`, { cache: 'no-store' }),
+          fetch(`${baseUrl}/idol/schedules?store_id=${IDOL_STORE_ID}&date=${selectedDate}`, { cache: 'no-store' }),
+          fetch(`${baseUrl}/idol/casts?store_id=${IDOL_STORE_ID}`, { cache: 'no-store' }),
         ])
 
         if (!schedulesRes.ok) throw new Error('Failed to fetch schedules from CRM')
@@ -109,6 +110,9 @@ export default function ScheduleSection() {
     }
   }
 
+  const businessTodayStr = dates[0]?.date ?? ''
+  const isSelectedToday = selectedDate === businessTodayStr
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-4">
@@ -150,14 +154,23 @@ export default function ScheduleSection() {
           </div>
         ) : girls.map((girl: any) => {
           const status = getStatus(girl.status)
+          const waitBadge = idolWaitStatusBadge(girl.wait_status, girl.attend_end_time, isSelectedToday)
           const imageUrl = getImageUrl(girl)
+          const dimCard = status.type === 'full' || waitBadge?.dimCard
 
           return (
             <Link
               href={`/girls/${girl.cast_id}`}
               key={`schedule-${girl.id}`}
-              className={`block relative rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all active:scale-[0.98] aspect-[4/5] bg-pink-50 group border border-pink-100 ${status.type === 'full' ? 'opacity-70 grayscale' : ''}`}
+              className={`block relative rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all active:scale-[0.98] aspect-[4/5] bg-pink-50 group border border-pink-100 ${dimCard ? 'opacity-70 grayscale' : ''}`}
             >
+              {waitBadge?.show && (
+                <div
+                  className={`absolute top-2 right-2 z-20 px-2.5 py-1 rounded-full text-[11px] ${waitBadge.className}`}
+                >
+                  {waitBadge.label}
+                </div>
+              )}
               {/* 背景画像 */}
               {imageUrl ? (
                 imageUrl.includes('placehold.co') || imageUrl.endsWith('.svg') ? (
