@@ -13,7 +13,8 @@ type RankingEntry = {
 
 type RankingResponse = {
   success: boolean
-  period_label?: string
+  source?: string
+  period_label?: string | null
   rankings: RankingEntry[]
 }
 
@@ -30,9 +31,8 @@ export default function RankingSection({ storeId = 2, limit = 10 }: RankingSecti
   useEffect(() => {
     const fetchRanking = async () => {
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_CRM_API_URL || 'https://crm.st-online.jp/api'
         const res = await fetch(
-          `${baseUrl}/rankings/honshimei?store_id=${storeId}&period=last_month&limit=${limit}`
+          `/api/rankings?store_id=${storeId}&period=last_month&limit=${limit}`,
         )
         if (!res.ok) return
 
@@ -54,7 +54,12 @@ export default function RankingSection({ storeId = 2, limit = 10 }: RankingSecti
   if (loading) return null
   if (girls.length === 0) return null
 
-  const title = periodLabel ? `${periodLabel}分の人気ランキング` : '先月分の人気ランキング'
+  const title =
+    periodLabel === '店長オススメ'
+      ? '店長オススメランキング'
+      : periodLabel
+        ? `${periodLabel}分の人気ランキング`
+        : '先月分の人気ランキング'
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
